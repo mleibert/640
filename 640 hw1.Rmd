@@ -1,0 +1,401 @@
+---
+title: ''
+output: pdf_document
+header-includes:
+   - \usepackage{cancel}
+geometry: margin=.8 in
+---
+
+Michael Leibert
+ 
+
+Math 640
+ 
+
+Homework 1
+
+\vspace{3 em}
+
+
+ \begin{itemize}
+     \item[1.] Show that the conditional distribution is a valid pdf/pmf for both discrete and continuous random variables. State the assumptions necessary to show this. 
+ 
+ 
+ \ 
+ 
+ \begin{itemize}
+     \item[ ]
+     
+    I am referencing Casella \& Berger, pages 36, 148-150.
+     
+     
+ 
+ \ 
+     
+ A function $f_Z(z)$ is a pdf (or pmf) of a random variable $Z$ iff
+ 
+ \begin{enumerate}
+  \item[{\bf a.}] $f_Z(z) \geq 0 \ \forall \  z$ 
+  \item[{\bf b.}] \( \displaystyle \sum\limits_z f_Z(z) = 1 \) (pmf) or 
+  \( \displaystyle \int\limits_{-\infty}^{\infty} f_Z(z) \ \text{d}z = 1 \) (pdf).
+\end{enumerate}
+   
+\  
+
+
+
+\ 
+
+Let $(X,Y)$ be a discrete bivariate random vector with joint pmf $f(x,y)$ and marginal pmfs $f_X(x)$ and $f_Y(y)$. For any $x$ such that $P(X=x) = f_X(x) > 0$ the conditional pmf of $Y$ given that $X=x$ is the function of $y$ denoted by $f(y|x)$ and defined by
+
+\vspace{1.5em}
+
+
+ \hfil \( \displaystyle   f(y|x) = P(Y=y|X=x) =\cfrac{f(x,y)}{f_X(x)}. \)
+ 
+\vspace{1.5em} 
+
+For any $y$ such that $P(Y=y) = f_Y(y) > 0$ the conditional pmf of $X$ given that $Y=y$ is the function of $x$ denoted by $f(x|y)$ and defined by
+
+\vspace{1.5em} 
+
+ \hfil \( \displaystyle   f(x|y) = P(X=x|Y=y) =\cfrac{f(x,y)}{f_Y(y)}. \)
+
+\vspace{2 em}
+
+Since we have called $f(y|x)$ a pmf, we should verify that this function of $y$ does indeed define a pmf for a rnadom variable. First, $f(y|x) \geq 0$ for every $y$ since $f(x,y) \geq 0$ and $f_X(x) \geq 0$. Second,
+
+
+\vspace{1.5em} 
+
+ \hfil \( \displaystyle   \sum\limits_y f(y|x) = \cfrac{\ \sum_y f(x,y) \ }{f_X(x)} =
+    \cfrac{ \ f_X(x)  \ }{f_X(x)} = 1 \).
+    
+\vspace{1.5em} 
+
+Thus, $f(y|x)$ is indeed a pmf.
+
+\newpage
+ 
+ { \bf Continuous:}
+ 
+ \vspace{2 em}
+
+Let $(X,Y)$ be a continuous bivariate random vector with joint pdf $f(x,y)$ and marginal pdfs $f_X(x)$ and $f_Y(y)$. For any $x$ such that $f_X(x) > 0$ the conditional pdf of $Y$ given that $X=x$ is the function of $y$ denoted by $f(y|x)$ and defined by
+   
+
+\vspace{1.5em}
+
+
+ \hfil \( \displaystyle   f(y|x)  = \cfrac{f(x,y)}{f_X(x)}. \)
+ 
+\vspace{1.5em} 
+
+For any $y$ such that $P(Y=y) = f_Y(y) > 0$ the conditional pmf of $X$ given that $Y=y$ is the function of $x$ denoted by $f(x|y)$ and defined by
+
+\vspace{1.5em} 
+
+ \hfil \( \displaystyle   f(x|y)  = \cfrac{f(x,y)}{f_Y(y)}. \)
+
+\vspace{2 em}
+   
+Since we have called $f(y|x)$ a pdf, we should verify that this function of $y$ does indeed define a pdf for a random variable. First, $f(y|x) > 0$ for every $y$ since $f(x,y) > 0$ and $f_X(x) >0$. Second,
+
+
+\vspace{1.5em} 
+
+ \hfil \( \displaystyle   \int\limits_{-\infty}^{\infty} f(y|x) \ \text{d}y =
+    \int\limits_{-\infty}^{\infty}   \cfrac{f(x,y)}{f_X(x)} \ \text{d}y
+    =   \cfrac{1}{ \    f_X(x) \ } \int\limits_{-\infty}^{\infty} f(x,y) \ \text{d}y   =
+    \cfrac{ \ f_X(x)  \ }{f_X(x)} = 1 \).
+    
+\vspace{1.5em} 
+
+Thus, $f(y|x)$ is indeed a pdf.
+ \end{itemize}
+   
+ 
+   \vspace{4 em} 
+   
+   
+   \item[2.] For each of the random variables, use a kernel recognition approach to determine the expectation.
+   
+
+ 
+   \vspace{3 em} 
+   
+   
+   \begin{itemize}
+       \item[ ] $\theta \sim Beta(\alpha, \beta)$ 
+
+\begin{align*}
+    E[\theta] &= \int_0^1 \cfrac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)} \ \theta^{\alpha-1}
+    (1-\theta)^{\beta-1} \ \theta \ \text{d}\theta \\[.4 em]
+    &=  \cfrac{ \ \Gamma(\alpha + \beta) \ \Gamma(\alpha+1) \  }{\Gamma(\alpha+\beta+1) \ \Gamma(\alpha)}  \
+        \underbrace{\int_0^1 \cfrac{ \ \Gamma(\alpha + \beta + 1) \  }{\Gamma(\alpha+1)\Gamma(\beta)} \ 
+            \theta^{\alpha} (1-\theta)^{\beta-1} \  \text{d}\theta}_{Beta(\alpha+1,\beta)} \\
+    &= \cfrac{ \ \cancel{\Gamma(\alpha + \beta)} \ \alpha \ \cancel{\Gamma(\alpha)} \  }
+        {  \ (\alpha+\beta) \ \cancel{ \Gamma(\alpha+\beta )} \ \cancel{\Gamma(\alpha)}  \ }  \cdot 1 \\
+    &= \cfrac{ \alpha }{ \alpha + \beta }
+\end{align*}
+
+\end{itemize}
+
+\newpage
+
+   \begin{itemize}
+       \item[ ] $\mu \sim Pois(\lambda)$
+
+\begin{align*}
+    E[\mu] &= \sum_{\mu = 0 }^\infty \cfrac{ \ \lambda^\mu \ \exp(-\lambda) \ }{ \mu ! } \  \mu \\
+    &= \sum_{\mu = 1 }^\infty \cfrac{ \ \lambda^\mu \exp(-\lambda) \ }{ (\mu-1) ! }    \ 
+            \cfrac{\lambda }{\lambda  } \\
+    &=  \lambda   \sum_{\mu = 1 }^\infty     \cfrac{ \ \lambda^{\mu-1} \ \exp(-\lambda) \ }{ (\mu-1) ! } 
+      \hspace{.5 in} \text{Let } \theta = \mu - 1 \\
+    &= \lambda   \sum_{\theta + 1 = 1 }^\infty     \cfrac{ \ \lambda^{\theta} \ \exp(-\lambda) \ }{  \theta  ! } \\
+    &= \lambda   \underbrace{  \sum_{\theta = 0 }^\infty 
+        \cfrac{ \ \lambda^{\theta} \ \exp(-\lambda) \ }{  \theta ! }}_{\text{Pois($\lambda$)}} \\
+    &= \lambda \cdot 1 \\
+    &= \lambda
+\end{align*}
+   
+   
+\end{itemize}
+
+\vspace{1.75 em}
+   
+   
+   \begin{itemize}
+       \item[ ] $\nu \sim Binom(n, p)$
+
+   
+\begin{align*}
+    E[\nu] &= \sum_{\nu = 0 }^\infty \binom{n}{\nu} \ p^\nu (1-p)^{n-\nu} \ \nu \\
+    &= np \sum_{\nu = 1 }^\infty \cfrac{(n-1)!}{ \ (\nu-1)!  (n-\nu)!  \ } \ p^{\nu-1} (1-p)^{n-\nu}  
+      \hspace{.5 in} \text{Let } \theta = \nu - 1 \\ 
+    &=  np \sum_{\theta+1 = 1 }^\infty \cfrac{(n-1)!}{ \ \theta! (n- \theta -1 )!  \ } \
+            p^{\theta} (1-p)^{n-1-\theta}  \\
+    &= np \underbrace{ \sum_{\theta = 0 }^\infty \binom{n-1}{\theta} \  p^{\theta} (1-p)^{n-1-\theta} }_{
+         Binom( n-1,p )  }  \\
+    &= np \cdot 1 \\
+    &= np
+\end{align*}   
+   
+   
+   
+\end{itemize}
+
+\vspace{1.75 em}
+   
+   
+   \begin{itemize}
+       \item[ ] $\gamma \sim Exp(\beta)$
+
+   
+   \begin{align*}
+       E[\gamma] &= \int_0^\infty \beta \exp\left( -\beta \gamma \right) \gamma \  \text{d} \gamma \\ 
+       &= \cfrac{\beta}{\beta^2} \ \Gamma(2) \underbrace{ \int_0^\infty \gamma^{2-1}  \exp\left( -\beta \gamma \right) \cfrac{\beta^2}{\Gamma(2)}    \     \text{d} \gamma }_{Gamma(2,\beta)}\\ 
+       &=    \cfrac{1}{\beta} \cdot 1 \cdot 1 \\
+        &=    \cfrac{1}{\beta} 
+   \end{align*}
+   
+
+   
+\end{itemize}
+
+\vspace{4 em}
+
+
+\item[3.] Returning to our example from class, suppose we wish to study the number of ponderosa pine trees in the Black Hills of South Dakota that are infected with the mountain pine beetle (a beetle that ultimately kills ponderosapines). Let $X$ be the number of infected ponderosa pines in a 10 square mile plot of forested land in the Black Hills. Further, let $N$ be the number of ponderosa pines in that plot and $P$ be the now \emph{unknown} probability that a randomly selected pine is infected. Thus, $X|N,P \sim Binom(N, P)$ where $N$ 
+and $P$ are independent random variables. For $N$, we assume $N|\Lambda \sim Pois(\Lambda)$ where $\Lambda \sim Gamma(\alpha, \beta)$. For $P$, we assume $P \sim Beta(\gamma, \zeta)$. Find $E(X)$.
+
+\vspace{2 em}
+
+\begin{itemize}
+    \item[ ]
+
+\begin{align*}
+    E[X] &= E\Big[ E(X|N,P) \Big] \\
+    &= E[NP] \\
+    &= E[N] \hspace{.16 em} E[P]  \\
+    &= E\Big[ E(N|\Lambda) \Big]  \ \cfrac{\gamma}{\gamma + \zeta} \\
+    &= E\Big[ \Lambda \Big]  \ \cfrac{\gamma}{\gamma + \zeta} \\
+    &= \cfrac{\alpha}{\beta} \ \cfrac{\gamma}{\gamma + \zeta} 
+\end{align*}   
+\end{itemize}
+
+\vspace{4 em}
+
+
+\item[4.] Consider now an investigation of changes in weight depending on two different weight loss strategies: exercise only or diet only. Let $\beta$ denote the average baseline weight, $\epsilon$ denote the average weight change after five months of those who were on the exercise only strategy, and $\delta$ denote the average weight change after five months of those on the diet only strategy. Further assume subjects are randomly assigned to either treatment arm with probability 0.5 and let $T_i$ be 0 if the subject exercised only and 1 if the subject dieted only. For a randomly subject $i$, we then assume\begin{align*}Y_i| \beta, \epsilon, \delta, T_i \sim N\left[\beta + \epsilon\cdot1(T_i = 0) + \delta\cdot1(T_i = 1), \sigma^2\right]\end{align*}Since $\beta$ is average baseline weight, it cannot be negative nor can it be too small. Thus we assume $\beta \sim Gamma(1800, 10)$. Further, assume $\epsilon \sim N(e, \tau_e^2)$ and $\delta \sim N(d, \tau_d^2)$. Assuming that $T_i$ is independent of $\epsilon$ and $\delta$, find $E(Y_i)$, the expected weight at study end for subject $i$.
+
+
+\vspace{2 em}
+
+\begin{itemize}
+    \item[ ]
+
+
+
+\begin{align*}
+    E[Y_i] &=E \Big[ E(Y_i | \beta, \epsilon, \delta, T_i) \Big] \\
+    &= E\Big[ \beta + \epsilon \cdot 1(T_i = 0) + \delta \cdot 1 (T_i = 1) \Big] \\
+    &= E\Big[\beta\Big] + E\Big[ \epsilon \cdot 1(T_i = 0) \Big]
+      + E\Big[\delta \cdot 1 (T_i = 1)\Big] \\
+    &= 180   +  E\Big[ \epsilon\Big]  \hspace{.24 em} E\Big[  1(T_i = 0)\Big] + 
+        E\Big[\delta\Big]  \hspace{.24 em}      E\Big[  1 (T_i = 1)\Big] \\
+    &= 180 + 0.5e + 0.5d    
+\end{align*}
+   
+   
+   \end{itemize}
+   
+   \end{itemize}
+
+\newpage
+
+
+ 
+
+\begin{itemize}
+    \item[5. ]   Use the Probability Integral Transform to write code that generates samples from each of the following distributions (you may look up the CDFs of each, i.e. you do not have to derive them). Generate 1000 samples each and plot the empirical distribution overlaying the theoretical distribution. Then increase the number of samples to 10,000 and repeat. For reproducibility, please set the seed \emph{before each run} to 108, \texttt{set.seed(108)}. Present all your code in your solution.
+
+
+
+\vspace{2 em}
+
+
+
+\begin{itemize}
+    \item[ ] $\theta \sim Exp(27)$
+  \begin{align*}
+      F(x) &= 1-\exp\left( -27 x \right) \\
+      u &= 1-\exp\left( -27 x \right) \\
+      1-u &= \exp\left( -27 x \right) \\
+     \cfrac{1}{1-u}  &= \exp\left(  27 x \right) \\
+     x &=  \cfrac{1}{27} \ \log\left( \cfrac{1}{1-u} \right)
+  \end{align*}
+
+   \end{itemize}
+   \end{itemize}
+   
+
+```{r, echo=F}
+require(ggplot2, quietly = T)
+require("evd" , quietly = T)
+options(scipen = 999)
+```
+
+
+```{r}
+set.seed(108)
+n = 1000;    u <- runif(n)
+x = (1/27) * log(1 / (1-u) );   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#3182bd",fill="#f7fcb9" ) +
+	labs(x="Exponential, n = 1000") + xlim( 0, .5 ) + ylim(0,25) +
+	stat_function( fun = dexp  , args = list(rate =  27) )
+
+set.seed(108)
+n = 10000;    u <- runif(n)
+x = (1/27) * log(1 / (1-u) );   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#3182bd",fill="#f7fcb9" ) +
+	labs(x="Exponential, n = 10000") + xlim(0 , .5 ) + ylim(0,25) +
+	stat_function( fun = dexp  , args = list(rate =  27) )
+```
+   
+   
+   
+   
+
+\vspace{3 em}
+
+
+\begin{itemize}
+    \item[ ]   
+    
+\begin{itemize}
+    \item[ ] $\theta \sim Cauchy(-7, 2)$, a location of $-7$ and scale of 2
+    
+    Note: the Cauchy sampler gives quite a few values that could be considered extreme relative to the rest of the distribution. In order to generate a decent looking plot, I have set the $x$-axis between -50 and 50, with the knowledge I have omitted many of the samples.
+ 
+   \begin{align*}
+       F(x) &= \cfrac{1}{2} + \cfrac{1}{\pi} \ \arctan\left( \cfrac{x-\mu}{\sigma}\right) \\[.24 em]
+       u &= \cfrac{1}{2} + \cfrac{1}{\pi} \ \arctan\left( \cfrac{x+7}{2}\right) \\[.24 em]
+     \pi  u - \cfrac{\pi}{2} &=\arctan\left( \cfrac{x+7}{2}\right) \\[.24 em]
+     \tan\left(   \pi  u - \cfrac{\pi}{2} \right) &= \cfrac{x+7}{2} \\[.24 em]
+    2  \tan\left(   \pi  u - \cfrac{\pi}{2} \right) - 7 &= x
+   \end{align*}
+
+   \end{itemize}
+   \end{itemize}
+   
+   
+   
+   
+```{r}
+w <- 50
+set.seed(108)
+n = 1000;    u <- runif(n)
+x = 2 * tan( (pi * u ) - ( pi / 2 ) ) - 7;   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#ccebc5",fill="#b3cde3" ) +
+		labs(x="Cauchy, n = 1000")   +    xlim( -w , w ) +   
+	stat_function( fun = dcauchy , args = list( location = -7, scale = 2) )
+
+set.seed(108);  n = 10000;    u <- runif(n)
+x = 2 * tan( (pi * u ) - ( pi / 2 ) ) - 7;   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#ccebc5",fill="#b3cde3" ) +
+		labs(x="Cauchy, n = 10000")   +    xlim( -w , w ) +   
+	stat_function( fun = dcauchy , args = list( location = -7, scale = 2) )
+
+```
+   
+   
+   
+   
+
+\vspace{3 em}
+
+
+\begin{itemize}
+    \item[ ]   
+    
+\begin{itemize}
+    \item[ ] $\theta \sim Gumbel(3, 6)$, a location of 3 and scale of 6
+ 
+
+   \begin{align*}
+       F(x) &= \exp\left[ -\exp\left( \cfrac{-(x-\mu)}{\beta} \right) \right] \\[.16 em]
+       u &= \exp\left[ -\exp\left( \cfrac{-(x-3)}{6} \right) \right] \\[.16 em]
+       -\log(u) &= \exp\left( \cfrac{-(x-3)}{6} \right) \\[.16 em]
+       \log\left[     -\log(u) \right] &=  \cfrac{3-x}{6}  \\[.16 em]
+       3-6\log\left[     -\log(u) \right] &=   x  \\[.16 em]
+   \end{align*}
+
+   \end{itemize}
+   \end{itemize}
+   
+   
+   
+```{r}
+set.seed(108)
+n = 1000;    u <- runif(n)
+x = 3 - 6*log( -log( u ) );   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#fbb4ae",fill="#decbe4" ) +	
+  labs(x="Gumbel, n = 1000") + 
+  stat_function( fun = dgumbel, args = list( loc = 3, scale = 6) )
+
+set.seed(108)
+n = 10000;    u <- runif(n)
+x = 3 - 6*log( -log( u ) );   dat<-data.frame(x)
+
+ggplot(dat, aes(x)) +  geom_density( col="#fbb4ae",fill="#decbe4" ) +
+	labs(x="Gumbel, n = 10000")   +  
+	stat_function( fun = dgumbel, args = list( loc = 3, scale = 6) )
+```
+   
+   
