@@ -1,0 +1,631 @@
+---
+title: ''
+output: pdf_document
+header-includes:
+   - \usepackage{cancel}
+   - \usepackage{multirow,setspace}
+geometry: margin=.75 in
+---
+
+Michael Leibert
+ 
+
+Math 640
+ 
+
+Homework 2
+
+\vspace{3 em}
+
+
+ \begin{itemize}
+     \item[1.] Let $y_i$, $i = 1, \ldots, n$ be iid normally distributed with mean $\mu$ and known variance $\sigma^2$. Assuming a conjugate prior for $\mu$ with parameters $\mu_0$ and $\tau_0^2$, fully specify the posterior distribution. 
+ 
+  \begin{itemize}
+     \item[ ]
+     
+
+ \begin{minipage}[t]{80 mm}
+   \begin{align*}
+       \mathcal{L}({\bf y }|\mu) &= \prod_{i=1}^n P(y_i|\mu) \\[.5 em]
+       &= \left( 2 \pi \sigma^2 \right)^{-\frac{n}{2}} \exp\Bigg[ - \cfrac{1}{2\sigma^2} \sum_{i=1}^n (y_i - \mu )^2 \Bigg] \\[.5 em]
+       & \propto  \exp\Bigg[ - \cfrac{1}{2\sigma^2} \sum_{i=1}^n (y_i - \mu )^2 \Bigg] 
+    \end{align*}
+   \end{minipage}
+   \begin{minipage}[t]{80 mm}
+    \begin{align*}
+       \pi(\mu) &=  \left( 2 \pi \tau_0^2 \right)^{-\frac{1}{2}} \exp\Bigg[ \cfrac{  \ - (\mu - \mu_0 )^2 \ }{ \ 2\tau_0^2 \ }   \Bigg] \\[.5 em] 
+       & \propto  \exp\Bigg[ \ \cfrac{- (\mu - \mu_0 )^2 \ }{ \ 2\tau_0^2 \ }   \Bigg] 
+   \end{align*}
+   \end{minipage}
+	\end{itemize}
+	
+	
+	
+   \
+   
+   
+\begin{align*}
+      \hspace{- 15 em } P(\mu|{\bf y }) & \propto   
+        \exp\Bigg[  \cfrac{\ - (\mu - \mu_0 )^2 \ }{ \ 2\tau_0^2 \ }   \Bigg]
+            \exp\Bigg[ - \cfrac{1}{2\sigma^2} \sum_{i=1}^n (y_i - \mu )^2 \Bigg]        \\[.4 em]
+    &= \exp\Bigg[ -\cfrac{1}{2} \ \Bigg(  \cfrac{  (\mu - \mu_0 )^2 \ }{ \  \tau_0^2 \ }   + 
+            \cfrac{1}{ \sigma^2} \sum_{i=1}^n (y_i - \mu )^2    \Bigg) \Bigg] \\[.4 em]
+    &= \exp\Bigg[ -\cfrac{1}{2} \ \Bigg( \cfrac{ 1 }{ \ \tau_0^2 \ }  (\mu^2 -2\mu\mu_0 + \mu_0^2 ) + 
+            \cfrac{1}{ \sigma^2} \sum_{i=1}^n \ \left(y_i^2 - 2y_i\mu + \mu^2 \right)  
+            \Bigg) \Bigg] \\[.4 em]
+    &= \exp\Bigg[ -\cfrac{1}{2} \ \Bigg(     \cfrac{ \mu^2  }{ \ \tau_0^2 \ } +    \cfrac{ \ n \mu^2   \      }{ \sigma^2}-   \cfrac{ 2\mu\mu_0 }{ \  \tau_0^2 \ }  -  \cfrac{ \ 2\mu \sum_i y_i \     }{       \sigma^2}  +    \cfrac{ \mu_0^2 }{ \ \tau_0^2 \ }  +       \cfrac{ \ \sum_i y_i^2  \    }{         \sigma^2}   \Bigg) \Bigg] \\[.4 em]        
+    &= \exp\Bigg( -\cfrac{1}{2} \ \Bigg[ 
+        \mu^2  \Bigg(     \cfrac{ 1 }{ \ \tau_0^2 \ } +    \cfrac{ \ n    \      }{ \sigma^2} \Bigg) -    2\mu  \Bigg(  \cfrac{ \mu_0 }{ \  \tau_0^2 \ }+ \cfrac{ \ \sum_i y_i \ }{ \sigma^2}  \Bigg)+   \cfrac{ \mu_0^2 }{ \ \tau_0^2 \ }  + \cfrac{ \ \sum_i y_i^2  \    }{  \sigma^2}     
+        \Bigg]   \Bigg) \\[.4 em]  
+    &=  \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}     \Bigg] \Bigg[ 
+        \mu^2  -    2\mu \ 
+        \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ \sum_i y_i \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }         +   
+        \cfrac{ \frac{ \mu_0^2 }{ \ \tau_0^2 \ }  + \frac{ \ \sum_i y_i^2  \    }{  \sigma^2}  }{
+             \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }   
+        \Bigg]   \Bigg) \\[.4 em]   
+    &=  \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}     \Bigg] \Bigg[ \Bigg(
+          \mu  -  
+        \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    \Bigg)^2     +   
+        \cfrac{ \frac{ \mu_0^2 }{ \ \tau_0^2 \ }  + \frac{ \ \sum_i y_i^2  \    }{  \sigma^2}  }{
+             \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    -
+        \Bigg( \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }
+        \Bigg)^2 \Bigg]   \Bigg) \\[.4 em]
+    &=  \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}     \Bigg] \Bigg[ \Bigg(
+          \mu  -  
+        \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    \Bigg)^2  
+            \ \Bigg]   \Bigg) 
+    \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}     \Bigg] \Bigg[ \Bigg(
+        \cfrac{ \frac{ \mu_0^2 }{ \ \tau_0^2 \ }  + \frac{ \ \sum_i y_i^2  \    }{  \sigma^2}  }{
+             \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    -
+        \Bigg( \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }
+        \Bigg)^2 \ \Bigg]   \Bigg) \\[.4 em]  
+    &=  \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}               \Bigg] 
+          \Bigg[ \Bigg(           \mu  -  
+        \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    \Bigg)^2  
+            \ \Bigg]   \Bigg) h(y) \\[.4 em]  
+        \hspace{- 15 em } P(\mu|{\bf y }) & \propto     
+        \exp\Bigg( -\cfrac{1}{2} \  
+        \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}     \Bigg] \Bigg[ \Bigg(
+          \mu  -  
+        \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y} \ }{ \sigma^2} }{
+            \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} }    
+            \Bigg)^2  \ \Bigg]   \Bigg) 
+\end{align*}
+   
+   
+Thus, the posterior is distributed $N(\mu_1,\tau_1^2)$, where 
+  \( \displaystyle \mu_1 = \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y}\ }{ \sigma^2} }{ \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} } \) 
+  and     \( \displaystyle\tau_1^2 = \Bigg(  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}   \Bigg )^{-1}  \)
+	
+That is,	
+	
+	\hfil \( \mu|{\bf y} \sim N\Bigg( \cfrac{ \frac{ \mu_0 }{ \  \tau_0^2 \ }+ \frac{ \ n \bar{y}\ }{ \sigma^2} }{ \frac{ 1 }{ \ \tau_0^2 \ } + \frac{ n  }{ \sigma^2} },    \Bigg[  \cfrac{ 1 }{ \ \tau_0^2 \ } + \cfrac{ n  }{ \sigma^2}   \Bigg ]^{-1} \Bigg) \displaystyle \).
+	
+\end{itemize}
+
+
+\vspace{3.5 em}
+
+ \begin{itemize}
+ \item[2.] Let $x_i$, $i = 1, \ldots, n$ be iid exponential with rate $\lambda$. Find a conjugate prior for the exponential likelihood. 
+ 
+     
+
+ 
+     \begin{minipage}[t]{80 mm}
+ \begin{align*}
+\mathcal{L}( \lambda |{ \bf x }) &= \prod_{i = 1}^n \lambda \exp\left( -\lambda x_i \right) \\
+            &= \lambda^n \exp\left( -\lambda \sum_{i = 1}^n x_i \right) \\
+            &= \lambda^n \exp\big( -\lambda n\Bar{x} \big)
+\end{align*}
+ \end{minipage} 
+ \begin{minipage}[t]{80 mm}
+  \begin{align*}
+  \\
+\pi(\lambda) &  \propto c(\lambda)^\eta \exp\big[ w(\lambda) \nu \big] \\[.5 em]
+ &= \lambda^\eta \exp\left( -\lambda \nu \right) \hspace{.75 in} \text{Let } \eta = \alpha - 1 \\[.5 em]
+&=  \underbrace{ \lambda^{\alpha - 1} \exp\left( -\lambda \nu \right)}_{ Gamma\left(  \alpha,  \nu  \right) \text{ kernel} }
+\end{align*}
+  \end{minipage} 
+
+\begin{align*}
+    P(  { \bf x } |  \lambda  ) &= \mathcal{L}( \lambda |{ \bf x }) \pi(\lambda) \\[.75 em]
+    & \propto \lambda^n \exp\big( -\lambda n\Bar{x} \big) \
+        \lambda^{\alpha - 1} \exp\left( -\lambda \nu \right) \\[.75 em]
+    &= \lambda^{n+\alpha - 1}    \exp\big(  -\lambda n\Bar{x} -\lambda \nu \big)  \\[.75 em]
+    &=  \underbrace{ \lambda^{n+\alpha - 1} \exp\Big( - \big[ n\Bar{x} + \nu \big] \lambda \Big) }_{
+            Gamma\big( n + \alpha, n\Bar{x} + \nu  \big) \text{ kernel} } \\ 
+\end{align*}
+
+  \begin{itemize}     \item[ ]
+The prior, distributed \( Gamma\left(  \alpha,  \nu  \right) \), is conjugate to the posterior, distributed \( \displaystyle Gamma\big( n + \alpha, n \Bar{x} + \nu  \big) \)
+
+
+
+
+\end{itemize}
+\end{itemize}
+
+
+
+
+ 
+       \vspace{  3.5 em} 
+   
+   
+ \begin{itemize}
+
+  \item[3.]   Let $Z$ be a geometric random variable with probability of success $\theta$. Here note that $Z$ is the number of failures until the first success. Thus the parameterization of the geometric we'll use is
+		\begin{align*}
+			p(Z|\theta) = (1 - \theta)^{Z} \theta.
+		\end{align*}
+		Find Jeffreys' prior for the geometric likelihood.
+   
+ 
+ 
+ \begin{minipage}[t]{80 mm}
+   \begin{align*}
+   \\
+       \mathcal{L}(Z | \theta ) &= (1-\theta)^Z \theta \\[.5 em]
+        \ell(Z | \theta ) &= Z \log(1-\theta) + \log(  \theta ) \\[1.5 em]
+        \cfrac{\partial \ell }{ \partial \theta } &= - \cfrac{Z}{(1-\theta)} + \cfrac{1}{\theta}  
+        \\[.5 em] 
+        \cfrac{\partial^2 \ell }{ \partial \theta^2 } &= - \cfrac{Z}{(1-\theta)^2} - \cfrac{1}{\theta^2} 
+    \end{align*}
+\end{minipage}  
+ \begin{minipage}[t]{80 mm}
+    \begin{align*} 
+  -E\left[ \cfrac{\partial^2 \ell }{ \partial \theta^2 } \right]   &= -E \left[ - \cfrac{Z}{(1-\theta)^2} -   \cfrac{1}{\theta^2} \right]  \\[.4 em] 
+        &=   \cfrac{E[Z]}{(1-\theta)^2} + \cfrac{1}{\theta^2} \\[.4 em] 
+        &= \cfrac{\cancel{1-\theta}}{\theta} \cfrac{1}{(1-\theta)^{\cancel{2}}} + \cfrac{1}{\theta^2} \\[.4 em] 
+  %      &= \cfrac{1}{\theta (1-\theta)} + \cfrac{1 }{\theta^2} \\[.4 em]
+        &= \cfrac{ \theta +  (1-\theta) }{  \theta^2 (1-\theta) } \\[.4 em]
+  %      &= \cfrac{ \cancel{\theta} +   1 \cancel{-\theta}   }{  \theta^2 (1-\theta) } \\[.4 em]
+  %     &= \cfrac{1}{  \theta^2 (1-\theta) }  \\[.4 em]
+        &= \theta^{-2} (1-\theta)^{-1}  
+    \end{align*}
+  \end{minipage}  
+
+
+
+\begin{align*}
+       \Big[ J(\theta) \Big]^\frac{1}{2}   &= \theta^{-1} (1-\theta)^{-\frac{1}{2}}
+   \end{align*}
+   
+   \begin{align*}
+       P( \theta | Z ) &= \Big[   (1-\theta)^Z \theta  \Big] 
+         \Big[(1-\theta)^{-\frac{1}{2}} \theta^{-1}  \Big]  \\[.5 em]
+     &=    (1-\theta)^{Z-\frac{1}{2} + 1 - 1 } \ \theta^{1-1}  \\[.5 em]
+     &=     \theta^{1-1}   \ (1-\theta)^{Z + \frac{1}{2}   - 1 } 
+\end{align*}
+   
+ \hfil   \( \displaystyle  \theta | Z \sim Beta\left(1 , Z + \frac{1}{2}   \right) \)
+
+\end{itemize}
+
+\vspace{2 em}
+
+\Large {\bf Analysis Exercises} 
+
+\normalsize
+
+\ 
+
+ \begin{itemize}
+
+
+   \item[4. ] Table contains data collected from three recent surveys regarding whether or not Americans approve of the job Congress is doing. Each sample was taken from registered voters (data courtesy of \verb|realclearpolitcs.com|).
+   
+   \
+   
+		\begin{table}[h] 
+			\centering
+			\caption{Recent Congressional Approval Polls}
+			\label{t:approve}
+			\begin{tabular}{lccc}
+				\hline
+				\hline
+				\multirow{2}{*}{Poll} & \multirow{2}{*}{Date} & Sample & Number who \\
+				 & & Size & Approve \\
+				\hline
+				Economist/YouGov & 1/12 - 1/15 & 1289 & 142 \\
+				\hline
+				CNN & 12/6 - 12/9 & 919 & 175\\
+				\hline
+				Monmouth University & 11/9 - 11/12 & 716 & 165\\
+				\hline
+				\hline
+			\end{tabular}
+		\end{table}
+		
+		\
+		
+		
+		\begin{itemize}
+			\item[(a)] For the Monmouth University poll above, conduct an analysis of the proportion of registered voters who approve of the job Congress is doing using the standard uniform prior. In your analysis, provide a brief discussion of the results along with an estimate of the posterior mean, 95\% credible interval, and plot of the posterior distribution.
+			
+\begin{itemize}				\item[]
+			    \begin{minipage}[t]{50 mm}
+                    \begin{align*} 
+                        \mathcal{L}(x | \theta ) & \propto  \theta^x (1-\theta)^{n-x} \\[2 em]
+                        P( \theta  | x ) &= \theta^x (1-\theta)^{n-x}
+                    \end{align*}
+             \end{minipage}  
+  			 \begin{minipage}[t]{50 mm}
+                \begin{align*} 
+                    \pi(  \theta ) &= 1 \\[2 em]
+                    \theta  | x  & \sim Beta(x+1,n-x+1)
+                \end{align*}
+            \end{minipage}  
+		\end{itemize} \end{itemize}     \end{itemize}   
+ 
+ 
+ \ 
+ 
+ \
+
+```{r, echo = F}
+setwd("G:\\math\\640")
+require(mcmcplots, quietly = T)
+require(ggplot2, quietly = T)
+skin <- read.table( "skin.txt"  , header = T)
+source("G:\\math\\multiplot.R")
+source("G:\\math\\credInt.R")
+```
+
+```{r}
+X <- 165
+n <- 716
+Nsim <- 10000  
+
+alpha1 = X + 1 
+Beta1 = n - X + 1
+
+bs1  <- matrix( rbeta(Nsim, alpha1 , Beta1 ), , 1) 
+
+# posterior mean
+mean( bs1 )
+
+# 95% credible interval
+quantile(bs1, probs = c(0.5, 0.025, 0.975))
+```
+
+```{r,  echo = F}
+qu <- quantile(bs1, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(bs1)[[1]], round(density(bs1)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+g1 <- ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .2) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   ) +
+   ggtitle("Sampled Posterior Density")
+g1
+#denplot(bs1, main = "Sampled Posterior Density" );credInt(bs1)
+```
+
+\begin{itemize}			\item[ ] 
+ 
+The mean of the distribution is nearly identical to if we simply took the sample proportion, \( \displaystyle \cfrac{165}{716} = 0.2304469\). This is probably reflecting that the standard uniform prior does not add any information to the estimate.
+
+		\end{itemize}  
+
+
+\ 
+
+
+\begin{itemize}			\item[ ] 
+\begin{itemize}			\item[(b)] 
+Now analyze the CNN poll using the posterior distribution from part (a) as the new prior. As before, your analysis should give a brief discussion of the results along with an estimate of the posterior median, 95\% credible interval, and plot of the posterior distribution.
+			
+\begin{itemize}				\item[]
+			    \begin{minipage}[t]{70 mm}
+                    \begin{align*} 
+                        \mathcal{L}(y | \theta ) & \propto \theta^y (1-\theta)^{m-y} \\[2 em]
+                        P( \theta  | y ) &= \theta^{x+y+1-1} (1-\theta)^{m+n-(x+y)+1-1}
+                    \end{align*}
+             \end{minipage}  
+  			 \begin{minipage}[t]{80 mm}
+                \begin{align*} 
+                    \pi(  \theta ) &=  \theta^x (1-\theta)^{n-x} \\[2 em]
+                    \theta  | y  & \sim Beta(x+y+1,m+n-(x+y)+1)
+                \end{align*}
+            \end{minipage}  
+		\end{itemize} \end{itemize}     \end{itemize}    
+
+\ 
+
+```{r}
+Y <- 175
+m <- 919
+
+alpha2 = X + Y + 1 
+Beta2 = m + n - ( X + Y ) + 1
+
+set.seed(1)
+bs2	<-  rbeta(Nsim, alpha2 , Beta2  ) 
+
+median(bs2)
+
+# 95% credible interval
+quantile(bs2, probs = c(0.5, 0.025, 0.975))
+```
+
+```{r,  echo = F}
+qu <- quantile(bs2, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(bs2)[[1]], round(density(bs2)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+g2 <- ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .2) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   ) +
+   ggtitle("Sampled Posterior Density")
+g2
+#denplot(bs2, main = "Sampled Posterior Density" );credInt(bs2)
+```
+
+\ 
+
+
+\begin{itemize}			\item[ ]
+\begin{itemize}			\item[ ] 
+For the CNN survey, the sample proportion is \( \displaystyle \cfrac{175}{919}  =  0.1904244 \). While relatively close to the 19\%, we note that the median is approximately 1.8 percentage points higher than the 19\%. The use of the prior from the Monmouth University survey is providing some information that maybe the true value of the parameter is slightly higher than what the CNN survey is estimating. 
+
+The Credible interval is slightly tigher than before, probably reflecting the sample sizes were ``combined.'' The previous one was approximately $\pm$ 3\% while this one is about $\pm$ 2\%.
+		\end{itemize}		\end{itemize}
+
+		
+
+
+
+
+\ 
+
+ 
+\begin{itemize}			\item[ ]
+ \begin{itemize}			\item[(c)] 
+First analyze the Economist/YouGov poll using a standard uniform prior. Determine the posterior mean, 95\% credible interval, and plot of the posterior distribution. Next, analyze the Economist/YouGov poll using the posterior distribution from part (b) as the prior. As before, your analysis should give a brief discussion of the results along with an estimate of the posterior mean, 95\% credible interval, and plot of the posterior distribution. Compare the results of the analysis using a noninformative prior to the results using an informative prior be sure to present a graph showing both posteriors.	
+
+
+\begin{itemize}				\item[]
+    \begin{minipage}[t]{50 mm}
+                    \begin{align*} 
+                        \mathcal{L}(z | \theta ) & \propto  \theta^z (1-\theta)^{\ell-z} \\[2 em]
+                        P( \theta  | z ) &= \theta^z (1-\theta)^{\ell-z}
+                    \end{align*}
+             \end{minipage}  
+  			 \begin{minipage}[t]{50 mm}
+                \begin{align*} 
+                    \pi(  \theta ) &= 1 \\[2 em]
+                    \theta  | z  & \sim Beta(z+1,\ell-z+1)
+                \end{align*}
+            \end{minipage}  
+\end{itemize} \end{itemize}          \end{itemize}     
+
+\  
+
+```{r}
+Z <- 142
+l <- 1289
+
+alpha3 =  Z + 1 
+Beta3 = l  -  Z   + 1
+
+set.seed(1)
+bs3	<-  rbeta(Nsim, alpha3 , Beta3  ) 
+
+mean(bs3)
+
+# 95% credible interval
+quantile(bs3, probs  = c(0.5, 0.025, 0.975))
+```
+
+
+```{r,  echo = F}
+qu <- quantile(bs3, probs  = c(0.5, 0.025, 0.975))[2:3]
+
+d <- data.frame( density(bs3)[[1]], round(density(bs3)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+g3 <- ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="green" , ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y), fill="green", alpha = .2) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   ) +
+   ggtitle("Sampled Posterior Density")
+g3
+#denplot(bs3, main = "Sampled Posterior Density" );credInt(bs3)
+```
+
+
+
+\ 
+
+
+\begin{itemize}			\item[ ] 
+  The discussion is similar to using the uniform prior on the Monmouth University survey. The mean of the distribution is nearly identical to if we simply took the sample proportion, \( \displaystyle \cfrac{142}{1289} = 0.1101629\). This is probably reflecting that the standard uniform prior does not add any information to the estimate. 
+
+  
+However, we not that the estimate itself is considerably different than from the Monmouth University. We might put more trust in this survey because the sample size is almost twice as large. The credible interval is roughly $(\Hat{\theta} - 0.016,\Hat{\theta} +  0.018)$, smaller than the previous two.
+
+		\end{itemize}     
+
+
+
+\vspace{2 em}
+
+\begin{minipage}[t]{88 mm}
+  \begin{align*} 
+    \mathcal{L}(z | \theta ) & \propto \theta^z (1-\theta)^{\ell-z} \\[2 em]
+    P( \theta  | y ) &= \theta^{x+y+z+1-1} (1-\theta)^{\ell+m+n-(x+y+z)+1-1}
+  \end{align*}
+\end{minipage}  
+\begin{minipage}[t]{88 mm}
+  \begin{align*} 
+    \pi(  \theta ) &= \theta^{x+y+1-1} (1-\theta)^{m+n-(x+y)+1-1} \\[2 em]
+    \theta  | y  & \sim Beta(x+y+z+1,\ell+m+n-(x+y+z)+1)
+  \end{align*}
+\end{minipage}  
+
+\ 
+
+```{r}
+Z <- 142
+l <- 1289
+
+alpha4 = X + Y + Z + 1 
+Beta4 = l + m + n - ( X + Y + Z ) + 1
+
+set.seed(1);  bs4	<-  rbeta(Nsim, alpha4 , Beta4  ) ;  mean(bs4)
+
+# 95% credible interval
+quantile(bs4, probs = c(0.5, 0.025, 0.975))
+```
+
+```{r,  echo = F}
+qu <- quantile(bs4, probs  = c(0.5, 0.025, 0.975))[2:3]
+
+d <- data.frame( density(bs4)[[1]], round(density(bs4)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+g4 <- ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="purple" , ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y), fill="purple", alpha = .2) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   ) +
+   ggtitle("Sampled Posterior Density")
+g4
+```
+
+
+
+\ 
+
+
+\begin{itemize}			\item[ ] 
+In this last one, we have borrowed strength from the previous two surveys. It is as if we simply aggregated the data into one analysis to begin with. 
+
+
+The population parameter is most likely not nearly as high as the first two surveys suggest, and probably not nearly as low as the Economist/YouGov estimates. That is the model's, with the previous prior, estimate is about 5.4 percentage points higher than the estimate of the Economist/YouGov model that only used the standard uniform.
+Again, the credible interval shrinks as the ``sample size'' increases. In this analysis it is $\pm$ 1.3\%.
+
+
+We wonder, because there is a time component, that if combining the strength of the surveys is the wisest thing to do, but for our simple model, it seems sufficient enough.
+
+		\end{itemize}
+
+
+  
+
+\vspace{2 em}
+
+All four plots
+
+
+```{r, echo = F}
+multiplot(g1 +  ggtitle(""),g2+  ggtitle(""),g3+  ggtitle(""), g4+  ggtitle(""))
+```
+
+
+\newpage
+
+
+
+
+
+\begin{itemize}			\item[2.]  Consider data from a skin cancer prevention study found in the file \texttt{skin.txt} alongside this assignment. Let $x_i$ denote the number of skin cancers found on subject $i$ from the study. We can assume that $x_i$ are iid $Pois(\lambda)$ for $i = 1, \ldots, n$. Find Jeffrey's prior for $\lambda$ and use it it to determine the posterior distribution of $\lambda| x_1, \ldots, x_n$. The variable \texttt{numsc} contains the count of skin cancers found on each subject. Using this, calculate the posterior mean and 95\% credible interval of the rate of skin cancers. Also provide a plot of the posterior distribution.
+
+
+
+	\
+	
+  \begin{minipage}[t]{80 mm}
+     \begin{align*}
+    \mathcal{ L }({\bf x} | \lambda ) &= \prod_{i = 1}^n \  
+        \cfrac{\lambda^{x_i} \ \exp(-\lambda ) }{ x_i ! } \\[.5 em]
+        &=   \exp(-n \lambda) \ \cfrac{ \ \lambda^{n\Bar{x}}  \ }{ \prod_i x_i ! } \\[.5 em]
+      & \propto      \exp(-n \lambda) \ \lambda^{n\Bar{x}} \\[1.5 em]
+      \ell({\bf x} | \lambda )  &  \propto   -n\lambda + n\Bar{x} \log(\lambda) \\[1.5 em]
+      \cfrac{ \partial \ell }{ \partial \lambda } &= -n + \cfrac{ \   n\Bar{x} \ }{ \lambda } \\[1.5 em]
+      \cfrac{ \partial^2 \ell }{ \partial \lambda^2 } &=  - \cfrac{  \   n\Bar{x} \ }{ \lambda^2 }
+   \end{align*}
+  \end{minipage}
+ \begin{minipage}[t]{80 mm}
+
+   \begin{align*}
+    -E\left[ \cfrac{\partial^2 \ell }{ \partial \theta^2 } \right] &= -E \left[  - \cfrac{  \   n\Bar{x} \ }{
+        \lambda^2 }  \right]  \\[.5 em] 
+        &= \cfrac{ \ \sum_i E[ x_i ] \ }{ \lambda^2 }  \\[.5 em] 
+        &= \cfrac{ \ n \cancel{\lambda} \ }{ \lambda^{\cancel{2}} }  \\[.5 em]
+        &= \cfrac{n}{\lambda}
+   \end{align*}
+
+   \begin{align*}
+       \Big[ J(\theta) \Big]^\frac{1}{2} &= \left[ \cfrac{n}{\lambda} \right]^\frac{1}{2} \\[.5 em]
+         & \propto \cfrac{1}{\ \sqrt{\lambda}  \ } \\[.75 em]
+   \end{align*}
+  \end{minipage}
+
+   \begin{align*}
+       P(\lambda | {\bf x}) & \propto \Big[ \exp(-n \lambda) \ \lambda^{n\Bar{x}}  \Big]  
+             \Big[ \lambda^{-\frac{1}{2}} \Big]  \\[ .5 em]
+        &=      \exp(-n \lambda) \  \lambda^{ n\Bar{x} -\frac{1}{2} + 1 - 1  } \\[ .5 em]
+        &=      \exp(-n \lambda) \  \lambda^{ n\Bar{x} +  \frac{1}{2}   - 1  } 
+   \end{align*}
+   
+   \hfil \( \displaystyle  \lambda | {\bf x} \sim Gamma\left( n\Bar{x} +  \frac{1}{2}, n \right) \)
+   
+   \
+   
+   
+   \
+
+
+ \end{itemize}  
+
+
+
+
+ 
+
+
+
+\ 
+
+
+```{r}
+set.seed(1)
+gs <- rgamma(Nsim , sum( skin[,1] ) + .5 ,  nrow(skin) )
+quantile(gs, prob  = c(0.5, 0.025, 0.975))
+
+#mean
+mean(gs)
+```
+
+```{r,  echo = F}
+qu <- quantile(gs, prob  = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(gs)[[1]], round(density(gs)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="brown" , size = 1) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 ,ymax=y), fill="brown", alpha = .2) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   ) +    ggtitle("Sampled Posterior Density")  
+```
+
+ 
+ 

@@ -1,6 +1,9 @@
-library(mcmcplots)
-require(ggplot2, quietly = T)
 rm(list = ls())
+setwd("G:\\math\\640")
+require(mcmcplots, quietly = T)
+require(ggplot2, quietly = T)
+
+ 
 
 credInt <- function( x ){
 	densOut <- density(x)
@@ -15,7 +18,7 @@ credInt <- function( x ){
 		= rgb(0, 0, 1, alpha = 0.5))	) }
 
 
-## 1A
+##  
 X <- 165
 n <- 716
   
@@ -23,21 +26,44 @@ alpha = X + 1
 Beta = n - X + 1
 
 #mean
-alpha / ( alpha + Beta   )
-
+#alpha / ( alpha + Beta   )
 # Variance 
-( alpha * Beta )  / (  ( alpha + Beta )^2 * ( alpha + Beta +1 ) )
-
+#( alpha * Beta )  / (  ( alpha + Beta )^2 * ( alpha + Beta +1 ) )
 # Mode
-( alpha - 1 ) / ( alpha + Beta - 2 ) 
+#( alpha - 1 ) / ( alpha + Beta - 2 ) 
 
-betaSamples	<- as.data.frame( matrix(rbeta(10000, alpha , Beta ), , 1) )
 
-denplot(betaSamples, main = "Sampled Posterior Density", lwd = 2)
-credInt(betaSamples[,1]) 
+bs  <- matrix( rbeta(10000, alpha , Beta ), , 1) 
+
+
+# colnames(betaSamples) <- "x"
+# brief discussion of the results
+
+
+
+# posterior mean
+mean( bs  )
+
+# 95% credible interval
+quantile(bs, probs = c(0.5, 0.025, 0.975))
+qu <- quantile(bs, probs = c(0.5, 0.025, 0.975))[2:3]
+
+# plot of the posterior distribution
+
+#denplot(as.vector(bs[,1]), main = "Sampled Posterior Density", lwd = 2)
+#credInt(bs[,1]) 
 
 #dev.new()
-#ggplot(betaSamples, aes(V1)) + geom_density( col="#fbb4ae" )
+d <- data.frame( density(bs)[[1]], round(density(bs)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+ 
+ 
+ 
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="red" , size = 1) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , 
+		ymax=y   ), fill="red", alpha = .2) +
+	theme(legend.position="none") 
 
 
 
@@ -49,20 +75,26 @@ m <- 919
 alpha = X + Y + 1 
 Beta = m + n - ( X + Y ) + 1
 
-#mean
-alpha / ( alpha + Beta   )
 
-# Variance 
-( alpha * Beta )  / (  ( alpha + Beta )^2 * ( alpha + Beta + 1 ) )
+bs	<-  rbeta(10000, alpha , Beta  , , 1) 
 
-# Mode
-( alpha - 1 ) / ( alpha + Beta - 2 ) 
+median(bs)
 
-betaSamples	<- as.data.frame( matrix(rbeta(10000, alpha , Beta ), , 1) )
+# 95% credible interval
+quantile(bs, probs = c(0.5, 0.025, 0.975))
+qu <- quantile(bs, probs = c(0.5, 0.025, 0.975))[2:3]
 
+d <- data.frame( density(bs)[[1]], round(density(bs)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+ 
 dev.new()
-denplot(betaSamples, main = "Sampled Posterior Density", lwd = 2)
-credInt(betaSamples[,1]) 
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="blue" , size = 1) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , 
+		ymax=y   ), fill="blue", alpha = .2) +
+	theme(legend.position="none") +
+ 
+
 
 
 
@@ -89,6 +121,27 @@ betaSamples	<- as.data.frame( matrix(rbeta(10000, alpha , Beta ), , 1) )
 dev.new()
 denplot(betaSamples, main = "Sampled Posterior Density", lwd = 2)
 credInt(betaSamples[,1]) 
+
+
+
+
+######################################################################
+
+skin <- read.table( "skin.txt"  , header = T)
+
+
+bs <- rgamma( 10000, sum( skin[,1] ) + .5 ,  nrow(skin) )
+qu <- quantile(bs, probs = c(0.5, 0.025, 0.975))[2:3]
+
+d <- data.frame( density(bs)[[1]], round(density(bs)[[2]],6) )
+colnames(d) = c("x" , "y" )
+d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+ 
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="blue" , size = 1) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , 
+		ymax=y   ), fill="blue", alpha = .2) +
+	theme(legend.position="none") 
+ 
 
 
 
