@@ -1,0 +1,456 @@
+---
+title: ''
+output: pdf_document
+header-includes:
+   - \usepackage{cancel}
+   - \usepackage{multirow,setspace}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{mathtools}
+geometry: margin=.75 in
+---
+
+Michael Leibert
+ 
+
+Math 640
+ 
+
+Homework 3
+
+\vspace{3 em}
+
+
+\begin{large} { \bf Theoretical Exercises } \end{large}
+
+\ 
+
+ \begin{itemize}
+     \item[1.]  Multi-parameter distributions often lack convenient conjugate priors (if they have one at all). One such case is when $Y_i$ are iid $Gamma(\alpha, \beta)$ where \emph{both} $\alpha$ and $\beta$ are unknown. The conjugate prior, while proper, is not a named density. Show that the joint prior
+		\begin{align*}
+			p(\alpha, \beta) \propto \frac{\beta^{\alpha s}}{\Gamma(\alpha)^r} p^{\alpha - 1}e^{-\beta q}
+		\end{align*}
+		is actually a conjugate prior for the Gamma distribution with unknown $\alpha$ and $\beta$. That is, show that when this joint prior is used, the resulting posterior has the same parametric form. Be sure to determine the parameters. (Hint: this prior is parameterized by $p, q, r,$ and $s$ thus the posterior should have four parameters as well.)
+  \end{itemize}
+ 
+\begin{align*}
+        \mathcal{L}(Y_i | \alpha, \beta ) &= \prod_{i=1}^n \cfrac{\beta^\alpha}{\Gamma(\alpha)} \ Y_i^{\alpha-1} \ 
+            \exp(-\beta Y_i) \\
+        &=      \cfrac{\beta^{\alpha n}}{\Gamma(\alpha)^n} \left[ \prod_{i=1}^n Y_i \right]^{\alpha-1}  
+            \exp\left(-\beta \sum_{i=1}^n Y_i\right) \end{align*}
+
+ \ 
+ 
+ \begin{itemize}   \item[ ] Let \(\displaystyle { \bm \theta } = ( \alpha, \beta , p,q,r,s )\)  \end{itemize}
+ 
+ 
+ 
+\begin{align*}
+    P({\bm \theta } | Y_i ) & \propto \cfrac{\beta^{\alpha n}}{\Gamma(\alpha)^n} \left[ \prod_{i=1}^n Y_i \right]^{\alpha-1}  \exp\left(-\beta \sum_{i=1}^n Y_i\right)   \cfrac{\beta^{\alpha s}}{\Gamma(\alpha)^r} \ 
+        p^{\alpha - 1}e^{-\beta q} \\[.5 em] 
+    &  =     \cfrac{\beta^{\alpha (n+s)}}{ \ \Gamma(\alpha)^{n+r} \ }  \left[ p \prod_{i=1}^n Y_i \right]^{\alpha-1} 
+            \exp\left[ -\beta \left( q + \sum_{i=1}^n Y_i  \right) \right] \\[.5 em]
+    &  =     \cfrac{\beta^{\alpha s^*}}{ \ \Gamma(\alpha)^{r^*} \ }  \ p^{*^{\alpha-1} }
+            \exp\Big( -\beta q^* \Big)     \\     
+\end{align*} 
+
+\hfil \(\displaystyle \begin{matrix} s^*  = n+s & \hspace{ 2 cm}  r^*  = n+r   &  \hspace{ 2 cm} 
+    p^* =  p \prod\limits_{i=1}^n Y_i &  \hspace{ 2 cm} q^*  = q + \sum\limits_{i=1}^n Y_i     \end{matrix}  \)
+    
+
+
+
+\vspace{5 em}
+
+
+
+
+
+ \begin{itemize}  
+     \item[2.]Let ${\bm y}  = [\begin{array}{cccc} y_{1} & y_{2} & \cdots & y_{n} \end{array}]'$ be an $n\times1$ vector of regression outcomes. Further let $X$ denote an $n\times p$ matrix of covariates and ${\bm \beta}$  be a $p\times1$ vector of coefficients. Assume ${\bm y}$ is normally distributed of the form
+		\begin{align*}
+			{\bm y} \sim MVN\left(X {\bm \beta}, \lambda^{-1} I_{n\times n}\right).
+		\end{align*}
+		That is, the standard regression assumption where we've parametrized the model in terms of the precision, $\lambda$. Using the joint prior $\pi({\bm \beta}, \lambda) \propto \lambda^{-1}$, find the marginal distribution posterior of $\lambda | {\bm y}, X$ and the conditional posterior distribution of ${\bm \beta} | \lambda, {\bm y}, X$.
+ \end{itemize} 		
+ 
+  
+\begin{align*}
+    \mathcal{L}({\bm y}  | X, {\bm \beta} , \lambda ) & \propto \Big| \lambda^{-1} I_n \Big|^{\frac{1}{2}} \ \exp\left[ 
+        -\cfrac{1}{2} \left( {\bm y} - X {\bm \beta} \right)^T \left( \lambda^{-1} I_n \right)^{-1} 
+            \left( {\bm y} - X {\bm \beta} \right) \right] \\[.5 em]
+    & \propto \left( \lambda^{-1} \right)^{-\frac{n}{2}} \ \exp\left[ -\cfrac{\lambda}{2} \left( {\bm y} - X {\bm \beta}
+            \right)^T \left( {\bm y} - X {\bm \beta} \right) \right]  
+\end{align*}
+     
+
+\begin{align*} \hspace{-.5 in}
+    P({\bm \beta} , \lambda | {\bm y} , X ) & \propto   \lambda^{ \frac{n}{2} - 1} \
+         \ \exp\left[ -\cfrac{\lambda}{2} \left( {\bm y} - X {\bm \beta} \right)^T \left( {\bm y} - X {\bm \beta} \right) \right] \\[.5 em]  
+    & \propto   \lambda^{ \frac{n}{2} - 1} \ \exp\left[ -\cfrac{\lambda}{2} \left( {\bm y} - 
+        X \hat{ {\bm \beta} } + X \hat{ {\bm \beta} } - X {\bm \beta}   \right)^T \left( {\bm y} - X \hat{ {\bm \beta} } + X \hat{ {\bm \beta} } - X {\bm \beta} \right) \right]           \\[.5 em]    
+    & \propto   \lambda^{ \frac{n}{2} - 1} \ \exp\left( -\cfrac{\lambda}{2} \left[ {\bm y} - 
+        X \hat{ {\bm \beta} } + X \left( \hat{ {\bm \beta} }   - {\bm \beta} \right) 
+            \right]^T  \left[ {\bm y} - X \hat{ {\bm \beta} } + X \left( \hat{ {\bm \beta} }   - {\bm \beta} \right) 
+            \right] \right)         \\[.5 em]    
+    & \propto         \lambda^{ \frac{n}{2} - 1} \  \exp\left( -\cfrac{\lambda}{2} \left[ 
+        \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) + 2 
+        \left( \hat{ {\bm \beta} }   - {\bm \beta} \right)^T X^T \left( {\bm y} - X \hat{ {\bm \beta} } \right) + 
+         \left( \hat{ {\bm \beta} }   - {\bm \beta} \right)^T X^TX \left( \hat{ {\bm \beta} }   - {\bm \beta} \right)
+        \right]  \right)      \\[.5 em]  
+     & \propto     \lambda^{ \frac{n}{2} - 1} \  \exp\left( -\cfrac{\lambda}{2} \left[
+         \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) +
+         \left( \hat{ {\bm \beta} }   - {\bm \beta} \right)^T X^TX \left( \hat{ {\bm \beta} }   - {\bm \beta} \right)
+        \right]  \right)      
+\end{align*}
+
+\begin{align*}
+      P({\bm \beta} | \lambda , {\bm y} , X ) & \propto  \exp\left[  -\cfrac{\lambda}{2} \left(  {\bm \beta}- 
+        \hat{ {\bm \beta} } \right)^T X^TX \left( {\bm \beta}   -\hat{ {\bm \beta} } \right) \right] 
+\end{align*}
+
+\begin{align*}
+       {\bm \beta} | \lambda , {\bm y} , X & \sim N\left[  \hat{ {\bm \beta} } , \ \lambda^{-1} 
+            \left(X^TX\right)^{-1}      \right]    
+\end{align*}
+
+\begin{align*} \hspace{-.25 in}
+        P( \lambda | X, {\bm y}  ) & \propto \int  \lambda^{ \frac{n}{2} - 1} \  \exp\left[ -\cfrac{\lambda}{2} \
+            \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) \right]  
+            \exp\left[ -\cfrac{\lambda}{2} \  \left( {\bm \beta}   -\hat{ {\bm \beta} } \right)^T X^TX \left( {\bm \beta}  -\hat{ {\bm \beta} } \right)   \right]   \text{d}    {\bm \beta}  \\[.5 em] 
+       & \propto    \lambda^{ \frac{n}{2} - 1} \  \exp\left[ -\cfrac{\lambda}{2} \
+            \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) \right] \
+             \int \cfrac{ \ \left(2\pi\right)^{\frac{p}{2}} \ \bigg| \lambda^{-1} I_p \left(X^TX\right)^{-1} \bigg|^{\frac{1}{2}} \ }{ \    \left(2\pi\right)^{\frac{p}{2}}    \ \bigg| \lambda^{-1} I_p \left(X^TX\right)^{-1} \bigg|^{\frac{1}{2}} \ } \ 
+            \exp\left[ -\cfrac{\lambda}{2} \  \left( {\bm \beta}   -\hat{ {\bm \beta} } \right)^T X^TX \left( {\bm \beta}  -\hat{ {\bm \beta} } \right)   \right]   \text{d}    {\bm \beta}  \\[.5 em]
+        &    \propto    \lambda^{ \frac{n}{2} - 1} \  \exp\left[ -\cfrac{\lambda}{2} \
+            \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) \right] \
+            \bigg| \lambda^{-1} I_p  \bigg|^{\frac{1}{2}} \ \ \bigg| \left(X^TX\right)^{-1} \bigg|^{\frac{1}{2}}\\[.5 em]
+         &    \propto    \lambda^{ \frac{n-p}{2} - 1} \  \exp\left[ -\cfrac{\lambda}{2} \
+            \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) \right] \  
+\end{align*} 
+
+\begin{align*}
+    \lambda | X, {\bm y} & \sim Gamma\left[ \cfrac{n-p}{2} , \ \cfrac{1}{2}
+         \left( {\bm y} - X \hat{{\bm \beta}} \right)^T  \left( {\bm y} - X \hat{{\bm \beta}} \right) \right]
+\end{align*}
+
+
+\newpage
+
+
+
+
+
+
+\begin{itemize}
+  \item[3.]   Let $W_i \sim N(\mu, \tau^2)$ for $i = 1, \ldots, n$ where both $\mu$ and $\tau^2$ are unknown. Determine the form of normal approximation to the joint posterior of $\mu$ and $\tau^2$ when using the non-informative joint prior, i.e. $\pi\left(\mu, \tau^2\right) \propto \left(\tau^2\right)^{-1}$. (Hint: this will require find the posterior modes for both $\mu$ and $\tau^2$ as well as the information matrix, i.e. the negative of the Hessian matrix.)
+	
+
+\end{itemize}
+
+
+
+\begin{align*}
+    \mathcal{L}( W| \mu, \tau^2 ) & \propto \left( \tau^2 \right)^{-  \frac{n}{2}} \ 
+        \exp\left[ - \cfrac{1}{2\tau^2} \sum_{i=1}^n \left( W_i - \mu \right)^2 \right]
+\end{align*}
+	
+\begin{align*}
+    P( \mu, \tau^2 | W )  & \propto  \left( \tau^2 \right)^{-  \frac{    (n+2) }{2}}  \ 
+        \exp\left[ - \cfrac{1}{2\tau^2} \sum_{i=1}^n \left( W_i - \mu \right)^2  \right]  \\[1 em]
+   \log\Big[ P( \mu, \tau^2 | W )\Big]  & \propto  -  \cfrac{ (n+2) }{2} \ \log\left( \tau^2 \right) \ 
+         - \cfrac{1}{2\tau^2} \sum_{i=1}^n \left( W_i - \mu \right)^2  \\      
+\end{align*}
+
+\begin{minipage}[t]{70 mm}
+\begin{align*}
+    \cfrac{\partial \log(P) }{ \partial \mu }  & \propto \cfrac{1}{\tau^2} \sum_{i=1}^n \left( W_i - \mu \right) \\[1 em]
+    0 &= \cfrac{1}{\tau^2} \sum_{i=1}^n \left( W_i - \mu \right) \\[.25 em]
+    %0 &= \cfrac{1}{\tau^2}  \sum_{i=1}^n W_i  - \cfrac{1}{\tau^2}  \sum_{i=1}^n \mu \\[.25 em]
+    \sum_{i=1}^n \mu  &= \sum_{i=1}^n W_i \\[.25 em]
+    n \mu &= n \overline{W}\\[.25 em]
+    \hat{ \mu } &=  \overline{W} 
+\end{align*}
+\end{minipage}
+\begin{minipage}[t]{107 mm}
+\begin{align*}
+    \cfrac{\partial \log(P) }{ \partial \tau^2  }  & \propto -\cfrac{ \ (n+2) \ }{ 2 \tau^2 } + 
+        \cfrac{1}{2  }   \left(\tau^2\right)^{-2} \ \sum_{i=1}^n \left( W_i - \mu \right)^2 \\[1 em]
+    0 &=  -\cfrac{ \ (n+2) \ }{ 2 \tau^2 } +  \cfrac{1}{2 } \left( \tau^2 \right)^{-2}  \   
+        \sum_{i=1}^n \left( W_i - \mu \right)^2 \\[.25 em]     
+     \cfrac{ \ (n+2) \ }{ 2 \tau^2 }  &= \cfrac{1}{2 } \left( \tau^2 \right)^{-2}  \ 
+        \sum_{i=1}^n \left( W_i - \mu \right)^2 \\[.25 em]
+       \Tilde{\tau}^2     &=     \cfrac{1}{(n+2)}  \  \sum_{i=1}^n \left( W_i - \mu \right)^2 \\[.5 em]
+       \Hat{\tau }^2 &= \Tilde{\tau}^2 \ \Big|_{\mu = \hat{\mu}} = \cfrac{1}{(n+2)} \ \sum_{i=1}^n \left( W_i - 
+        \overline{W} \right)^2       \\[.5 em]
+\end{align*}
+ \end{minipage}
+
+\
+
+\begin{align*}
+    \cfrac{\partial^2 \log(P) }{ \partial \mu^2  }  & \propto -\cfrac{n}{ \tau^2 } \\[1 em]
+     \cfrac{\partial^2 \log(P) }{ \partial \mu^2  }   \ \Bigg|_{ {\bm \theta } = \Hat{ {\bm \theta} }} &
+      \propto  -n \left( \hat{\tau}^2 \right)^{-1} \\[.5 em]
+      &= -n \ \left[ \cfrac{ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 }{n+2} \right]^{-1} \\[.5 em]
+      &= - \cfrac{n(n+2) }{ \  \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2  \  }
+\end{align*}
+
+\ 
+
+\begin{align*}
+    \cfrac{\partial^2 \log(P) }{ \partial \left(\tau^2\right)^2  }  & \propto \cfrac{(n+2)}{2 \left(\tau^2\right)^2  }
+       - \left( \tau^2 \right)^{-3}  \sum_{i=1}^n \left( W_i - \overline{W} \right)^2 \\[1.5 em] 
+    \cfrac{\partial^2 \log(P) }{ \partial \left(\tau^2\right)^2  } \ \Bigg|_{ {\bm \theta } = \Hat{ {\bm \theta} }} & 
+        \propto   \cfrac{n+2}{2} \left[ \cfrac{ \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \ }{n+2}  \right]^{-2} - \left[ \cfrac{ \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \ }{n+2}  \right]^{-3} \ 
+         \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \\[ .5 em]
+    &= \cfrac{ (n+2)^3 }{ \ 2   \left[  \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \right]^2 \  }     -
+        \cfrac{ (n+2)^3 }{  \ \left[ \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \right]^2 \  } \\[ .5 em]
+    &= - \cfrac{ (n+2)^3  }{  \ 2   \left[  \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \right]^2 \ } \\    
+\end{align*}
+
+\begin{itemize} \item[ ] The mean and the mode are equal for a Gaussian Distribution. \end{itemize}
+
+\begin{align*}
+    \cfrac{\partial^2 \log(P) }{ \partial  \tau^2  \  \partial  \mu } = 
+      \cfrac{\partial^2 \log(P) }{ \partial \mu \ \partial \tau^2 } & \propto -\cfrac{1}{ \ \left( \tau^2 \right)^2 \ }
+       \sum\limits_{i=1}^n \left( W_i -\mu \right) \\[2 em]
+    \cfrac{\partial^2 \log(P) }{ \partial  \tau^2  \  \partial  \mu } \ \Bigg|_{ {\bm \theta } = \Hat{ {\bm \theta} }} = 
+      \cfrac{\partial^2 \log(P) }{ \partial \mu \ \partial \tau^2 } \ \Bigg|_{ {\bm \theta } = \Hat{ {\bm \theta} }} &
+        \propto -\cfrac{1}{ \ \left( \hat{\tau}^2 \right)^2 \ } 
+        \sum\limits_{i=1}^n \left( W_i - \Hat{ \mu} \right) \\[1.5 em]
+    & = -\cfrac{1}{ \ \left( \hat{\tau}^2 \right)^2 \ } \sum\limits_{i=1}^n \left( W_i - \overline{W} \right) \\[.5 em]
+    &= 0 \\[1.5 em]
+\end{align*}
+
+\begin{minipage}[t]{88 mm}
+  \hfil  \( \displaystyle     { \hat{ \bm  \theta } }  =  \left( \  \overline{W} , \ \cfrac{ \  \sum\limits_{i=1}^n \left( W_i -  \overline{W}        \right)^2  \ }{(n+2)} \    \right) \) 
+\end{minipage}
+\begin{minipage}[t]{88 mm}
+   \hfil  \( \displaystyle       I\left( { \hat{ \bm  \theta } } \right)  = \begin{pmatrix} 
+    \cfrac{n(n+2) }{ \  \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2  \  } & 0 \\[.5 em]
+    0 & \cfrac{ (n+2)^3  }{  \ 2   \left[  \ \sum\limits_{i=1}^n \left( W_i - \overline{W} \right)^2 \right]^2 \ }  \end{pmatrix} \) 
+ \end{minipage}
+
+\ 
+
+\ 
+
+\begin{align*}
+    \mu, \tau^2 | W & \sim N\bigg[  { \hat{ \bm  \theta } }  , \  I\left( { \hat{ \bm  \theta } } \right)^{-1}  \bigg]
+\end{align*}   
+
+\newpage
+
+\begin{large} { \bf Analysis Exercises } \end{large}
+ 
+ \ 
+ 
+\begin{itemize}
+    \item [1.] The age distribution of the incidence of cancer can be modeled using the Erlang distribution which has as PDF
+		\begin{align*}
+			f_{X}(x; k, \lambda) = \frac{1}{(k-1)!} \lambda^k x^{k-1} e^{-\lambda x}
+		\end{align*}
+		where $x \in [0, \infty)$, $k \in \mathbb{Z}^+$, and $\lambda \in (0, \infty)$. Here the parameter $k$ can be interpreted as the number of carcinogenic events needed for a cancer to develop while $1/\lambda$ is the average time to developing cancer. The data file \texttt{incidenceUK.txt} contains age specific incidence of all cancers in both males and females in the United Kingdom for the years 2013 to 2015. Using an Erlang distribution with $k = 22$\footnote{Note: 22 is roughly the average number of carcinogenic events needed from the 20 most common cancers.}, fixed, find the posterior distribution of the average time to developing cancer in males and females, separately, using the normal approximation to the posterior density. Use Jeffreys' prior for $\lambda$. Generate posterior summaries and compare between males and females. Draw a conclusion in context. Use $B = 10000$ samples for each model and set the seed to 2020.
+\end{itemize}
+
+\begin{align*}
+    \mathcal{L} \left( x | k , \lambda \right) &= \prod_{i=1}^n \Big[ (k-1)! \Big]^{-1} \ \lambda^k \  x_i^{k-1} \
+        \exp\left( -\lambda x_i \right) \\[.5 em]
+    &=  \Big[ (k-1)! \Big]^{-n} \  \lambda^{nk} \left[ \prod_{i=1}^n  x_i \right]^{k-1} \ 
+         \exp\left( -\lambda \sum_{i=1}^n x_i \right) \\[.5 em]
+    \ell\left( x | k , \lambda \right) &= -n \log \Big[ (k-1)! \Big] + kn \log(\lambda) + (k-1) \log\left( 
+        \sum_{i=1}^n  x_i \right) - \lambda \sum_{i=1}^n  x_i \\[.25 em]
+\end{align*}
+
+
+\begin{minipage}[t]{88.5 mm}
+\begin{align*}
+    \cfrac{\partial \ell}{\partial \lambda} &= \cfrac{nk}{\lambda} -  \sum_{i=1}^n  x_i \\[1 em]
+     \cfrac{\partial^2 \ell}{\partial \lambda^2} &= \cfrac{-nk}{\lambda^2} \\[1 em]
+\end{align*}
+ \end{minipage}
+\begin{minipage}[t]{88.5 mm}
+\begin{align*}
+    J(\lambda) =  -E\left[ \cfrac{\partial^2 \ell}{\partial \lambda^2} \right] &= -E\left[\cfrac{-nk}{\lambda^2}\right] =
+        \cfrac{nk}{\lambda^2} \\[1 em]
+    \Big[ J(\lambda) \Big]^{\frac{1}{2}}  & \propto \lambda^{-1}  
+\end{align*}
+ \end{minipage}
+
+\begin{align*}
+    P(\lambda | k,x ) & \propto \cfrac{   \lambda^{nk-1}  }{  \ \Big[ (k-1)! \Big]^{ n} \ } \ \left[ \prod_{i=1}^n  x_i  
+        \right]^{k-1} \      \exp\Big( -n \Bar{x} \lambda   \Big) 
+        \end{align*}
+        
+        \ 
+        
+  \hfil \(\displaystyle   \lambda | k,x  \sim Gamma(nk,n\Bar{x})    \)
+
+
+\ 
+
+\begin{align*}
+    \log\Big[   P(\lambda | k,x ) \Big] & \propto (nk-1) \log(\lambda) - n\Bar{x}\lambda \\[1 em]
+    \cfrac{\partial}{ \partial \lambda } \log\Big[P(\lambda | k,x ) \Big] &= \cfrac{nk-1}{\lambda} - n\Bar{x} \\[1  em]
+    0 &= \cfrac{nk-1}{\lambda} - n\Bar{x} \\[.25 em]
+     n\Bar{x} &= \cfrac{nk-1}{\lambda} \\[.25 em]
+     \Hat{\lambda} &= \cfrac{nk-1}{n\Bar{x}}
+\end{align*}
+
+\begin{align*}
+    \cfrac{\partial^2}{ \partial \lambda^2 }  \ \log\Big[P(\lambda | k,x ) \Big] &= -\cfrac{nk-1}{\lambda^2} \\[.5 em]
+    I(\lambda) \ \Big|_{\lambda=\Hat{\lambda}} &= \cfrac{nk-1}{\hat{\lambda}^2} \\[.5 em] 
+        &= \cancel{ (nk-1)} \ \cfrac{ \left( n \overline{x} \right)^2 }{(nk-1)^{\cancel{2}}}  \\[.5 em] 
+        &= \cfrac{ \ \left( n \overline{x} \right)^2  \ }{ nk-1 }
+\end{align*}
+
+
+        \ 
+        
+  \hfil \(\displaystyle   \lambda | k,x  \sim N\left(\cfrac{nk-1}{n\Bar{x}}, \  
+    \cfrac{ nk-1  }{ \ \left( n \overline{x} \right)^2  \ } \right)    \)
+
+\ 
+
+```{r, echo = F}
+setwd("G:\\math\\640")
+require(ggplot2, quietly = T)
+options(scipen=999)
+dat <- read.table("incidenceUK.txt",header = T)
+```
+
+```{r}
+n = nrow(dat); k = 22
+xybar <- mean( dat$male )
+xxbar <- mean( dat$female )
+Nsim <- 10000
+
+set.seed(2020) #male
+xy <- rnorm( Nsim , (n*k-1) / (n * xybar ) , sqrt(n*k-1) / (n * xybar ) )
+set.seed(2020) #female
+xx <- rnorm( Nsim , (n*k-1) / (n * xxbar ) , sqrt(n*k-1) / (n * xxbar ) )
+
+#Male
+quantile(  xy , probs = c(.5,.025,0.975) ); mean( xy)
+#Female
+quantile(  xx  , probs = c(.5,.025,0.975) ); mean( xx)
+
+```
+
+```{r, echo = F, fig.align='center'}
+qu <- quantile(xx, probs  = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(xx)[[1]], round(density(xx)[[2]],6) )
+colnames(d) = c("xx" , "xxy" ) 
+d$xxarea <- d[,1] > qu[1] & d[,1] < qu[2]
+
+qu <- quantile(xy, probs  = c(0.5, 0.025, 0.975))[2:3]
+f <- data.frame( density(xy)[[1]], round(density(xy)[[2]],6) )
+ colnames(f) = c("xy" , "xyy" ) 
+f$xyarea <- f[,1] > qu[1] & f[,1] < qu[2]
+
+d <- cbind(d,f)
+
+
+
+ggplot( data = d       ) + theme_minimal() +
+	geom_line( aes(x  = xy , y =xyy   )  ,col="purple" )   +
+	geom_line( aes(x  = xx , y =xxy   )    , col="green" ) +
+	geom_ribbon(data = d[which(d$xyarea == T),], aes(xy, ymin=0, 
+		ymax=xyy , fill="Male" ), alpha = .1) +
+	geom_ribbon(data = d[which(d$xxarea == T),], aes(xx, ymin=0, 
+		ymax=xxy, fill="Female  "), alpha = .1)  + 
+	scale_fill_manual(values = c("green","purple")) +
+	theme(legend.position="bottom",   legend.title = element_blank() ) + 
+  	xlab(expression(lambda)) + ylab("")
+```
+
+```{r}
+#Male
+quantile( 1/xy , probs = c(.5,.025,0.975) ); mean(1/xy)
+#Female
+quantile( 1/xx  , probs = c(.5,.025,0.975) ); mean(1/xx)
+```
+
+```{r, echo = F, fig.align='center'}
+qu <- quantile(1/xx, probs  = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(1/xx)[[1]], round(density(1/xx)[[2]],6) )
+colnames(d) = c("xx" , "xxy" ) 
+d$xxarea <- d[,1] > qu[1] & d[,1] < qu[2]
+
+qu <- quantile(1/xy, probs  = c(0.5, 0.025, 0.975))[2:3]
+f <- data.frame( density(1/xy)[[1]], round(density(1/xy)[[2]],6) )
+ colnames(f) = c("xy" , "xyy" ) 
+f$xyarea <- f[,1] > qu[1] & f[,1] < qu[2]
+
+d <- cbind(d,f)
+
+
+
+ggplot( data = d       ) + theme_minimal() +
+	geom_line( aes(x  = xy , y =xyy   )  ,col="purple" )   +
+	geom_line( aes(x  = xx , y =xxy   )    , col="green" ) +
+	geom_ribbon(data = d[which(d$xyarea == T),], aes(xy, ymin=0, 
+		ymax=xyy , fill="Male" ), alpha = .1) +
+	geom_ribbon(data = d[which(d$xxarea == T),], aes(xx, ymin=0, 
+		ymax=xxy, fill="Female  "), alpha = .1)  + 
+	scale_fill_manual(values = c("green","purple")) +
+	theme(legend.position="bottom",   legend.title = element_blank() ) + 
+  	xlab("Average time to developing cancer") + ylab("")
+```
+
+\ 
+
+\begin{itemize} \item[ ]
+We see that women have a shorter average time to developing cancer vs men, 35 vs 48.6. It is also interesting to note, that women have a narrower credible interval than men. A pratical implication from these data suggest that women should get tested for cancer at a younger age than men, but when men approach the median time they should get tested more often because their interval of incidence is wider.
+
+\end{itemize}
+
+
+\vspace{4 em}
+
+
+\begin{itemize} \item[2. ] The dataset \texttt{coup1980.txt} contains the coup risk in the month of June from 1980 for 166 different countries. Using your result from Theoretical Exercise 2, build a linear regression model to predict \texttt{logCoup} risk using the covariates \texttt{democracy} (1 = yes, 0 = no), \texttt{age} (the leader's age in years), and \texttt{tenure} (the leader's tenure in months). Conduct relevant inference to determine significant predictors and describe how each variable impacted coup risk during June of 1980. Use $B = 10000$ samples and set the seed to 1980. (Hint: your description of the impact can be an interpretation, in context, of the coefficients.)
+
+\end{itemize}
+
+\ 
+
+```{r, echo = F}
+rm(list = ls())
+dat <- read.table("coup1980.txt",header = T)
+require(MASS, quietly = T)
+require(invgamma, quietly = T)
+```
+
+
+```{r}
+n = nrow(dat); Nsim = 10000
+y <- dat[,2]
+X <- as.matrix( dat[, - c(1,2 ) ] )
+X <- cbind(1,X) ;   colnames(X)[1] <- "(Intercept)"
+p <- ncol(X)
+BHat <- solve( t(X)%*%X ) %*% t(X) %*% y
+
+set.seed(1980)
+lambda <- rgamma(Nsim, (n-p)/ 2 , .5*t( y- X %*% BHat )%*% (y- X %*% BHat ))
+
+set.seed(1980)
+Beta <- matrix(NA, Nsim , p )
+for( i in 1:Nsim){ Beta[i,] <- mvrnorm( 1, BHat, (  1/lambda[i] ) * 	solve( t(X)%*% X )    ) }
+
+#GLM results
+summary(glm( logCoup~.   , data = dat[,-1 ] ))
+
+colnames(Beta) <- colnames(X)
+round( t( apply(Beta, 2, quantile, probs = c(0.5, 0.025, 0.975)) ) , 4 )
+```
+
+
+\ 
+
+\begin{itemize} \item[]
+When looking at an $x$ variable, we hold the other $x$ variables fixed. If the country is a democracy, it shifts the regression line downward with a new intercept of about -6.02. Holding other variables constant, for a one-unit increase in age \verb|logCoup| decreases by .02. And holding other variables constant, for a one-unit increase in tenure \verb|logCoup| decreases by .005. We can consider all the coefficients significant because 0 does not appear in any of the credible intervals.
+\end{itemize}
+
+
