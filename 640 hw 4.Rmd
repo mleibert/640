@@ -1,0 +1,229 @@
+---
+title: ''
+output: pdf_document
+---
+
+
+
+
+```{r, echo = F}
+rm(list = ls())
+setwd("G:\\math\\640")
+library(mvtnorm, quietly = T)
+library(moments, quietly = T)
+library(mcmcplots, quietly = T)
+library(MCMCpack, quietly = T)
+```
+
+
+```{r}
+B <- 10000
+ff <- read.table("forestfire.txt", header=TRUE)
+
+Beta <- log( mean(ff[,1]) / (1-mean(ff[,1])) )
+info <- 1/ ( mean(ff[,1])*( 1 - mean(ff[,1]) )*nrow(ff) )
+
+set.seed(821); r.beta <- rnorm(B, mean=Beta, sd= sqrt(info) )
+
+rmuList <- mcmc.list(list(mcmc(r.beta)))
+mat <- matrix(r.beta , ncol = 1); colnames( mat ) <- "beta"
+traplot( mat , greek = T )
+rmeanplot(mat , greek = T)
+autplot1( rmuList )
+geweke.diag( r.beta )
+mcmcplot1(mat, greek = T)
+```
+
+\ 
+
+For the trace plot we see no trend and random scatter. The running means plot shows the running mean flattening out as the number of samples increases. And the ACF plot shows independence of our samples, as the vertical lines drop between the blue dashed lines almost immediately. The Geweke Convergence Diagnostic is also showing convergence with a z-score that is within two standard devations from zero.
+
+
+\ 
+
+
+```{r}
+n <- nrow(ff)
+ybar <- mean(ff[,1])
+
+BJeff <- log( ( n*ybar + .5 )  /  ( n + .5 - n*ybar )  )
+IJeff <-  (n+1) * ( ( exp(BJeff) ) /  ( 1 + exp(BJeff) )^2 )
+1/IJeff
+set.seed(821); rj.beta <- rnorm(B , mean=BJeff , sd= 1/sqrt(IJeff ) )
+ 
+rmuListj <- mcmc.list(list(mcmc(rj.beta)))
+matj <- matrix(rj.beta , ncol = 1); colnames( matj ) <- "beta"
+traplot( matj , greek = T )
+rmeanplot(matj , greek = T)
+autplot1( rmuListj )
+geweke.diag( rj.beta )
+mcmcplot1(mat, greek = T)
+```
+
+
+\ 
+
+For the trace plot we see no trend and random scatter. The running means plot shows the running mean flattening out as the number of samples increases. And the ACF plot shows independence of our samples, as the vertical lines drop between the blue dashed lines almost immediately. The Geweke Convergence Diagnostic is also showing convergence with a z-score that is within two standard devations from zero.
+
+
+\ 
+
+It appears as if the model is not sensitive to the choice of non-informative priors. The estimates for $\beta$ and the variance are roughly the same regardless of the prior we choose.
+
+\newpage 
+
+\begin{itemize}
+\item[2] Using the daily Capital Bike Share data, \texttt{bikeshare.txt}, fit a Poisson regression model first with the casual users count as the outcome and then with the registered users count as the outcome. Using Bayesian inference, determine the best set of predictors for each outcome. For each final model, check the convergence of all model parameters using visual inspection as well as Geweke's diagnostic. Also provide a brief interpretation of each parameter. Do the models differ substantially from each other? Data variable names are provided alongside this assignment, \texttt{bikeshareDataDictionary.rtf}. For each model, set the seed to 1959.
+\end{itemize}
+\ 
+
+
+```{r}
+bike <- read.table("bikeshare.txt", header=T)
+fit <- glm( casual ~ . -registered  , data = bike , family = poisson )
+bhat	<- coef(fit)
+vbeta	<- vcov(fit)
+B <- 10000
+
+set.seed(1959)
+Beta <- rmvnorm(B, mean = bhat, sigma = vbeta)
+
+t(apply(Beta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+exp(t(apply(Beta, 2, quantile, probs = c(0.5, 0.025, 0.975))))
+```
+
+\ 
+
+None of the exponentiated credible intervals contain 0, so we use each variable in the regression.
+
+\ 
+
+```{r}
+mat <- as.matrix(Beta   ) 
+colnames( Beta ) <-  names( coef(fit) )
+rmuList <- mcmc.list(list(mcmc(mat )))
+traplot( mat , greek = T )
+rmeanplot(mat , greek = T)
+par(mfrow = c(2,4)); autplot1( rmuList )
+geweke.diag( Beta  )
+```
+
+\ 
+
+All the parameters looks as if they have converged, but there is some concern over the convergence of the \verb|workingday| parameter. Its Geweke diagnoistic is greater than 2, and it may not have converged from inspection of the running mean plot. However, it is not showing any drastic signs of not converging. 
+
+\ 
+
+
+Interpretation of the coefficients:
+
+\ 
+
+\verb|yr|: Holding all others constant, for an additional one unit in years, the expected rides for casual users increases by about 42\%.
+
+\ 
+
+\verb|holiday|: Holding all others constant, for holidays, the expected rides for casual users decreases about 22\%.
+
+\ 
+
+\verb|workingday|: Holding all others constant, for working days, the expected rides for casual users decreases about 58\%.
+
+\ 
+
+\verb|temp|: Holding all others constant, for one additional unit of temperature, the expected rides for casual users decreases about 60\%.
+
+\
+
+\verb|atemp|: Holding all others constant, for one additional unit of ``feeling'' temperature, the expected rides for casual users increases about 945\%.
+
+\ 
+
+\verb|hum|: Holding all others constant, for one additional unit of humidity, the expected rides for casual users decreases about 52\%.
+
+\ 
+
+\verb|windspeed|: Holding all others constant, for one additional unit of windspeed, the expected rides for casual users decreases about 69\%.
+
+
+\ 
+
+\ 
+
+```{r}
+bike <- read.table("bikeshare.txt", header=T)
+fit <- glm( registered ~ . -casual  , data = bike , family = poisson )
+bhat	<- coef(fit)
+vbeta	<- vcov(fit)
+B <- 10000
+
+set.seed(1959)
+Beta <- rmvnorm(B, mean = bhat, sigma = vbeta)
+
+t(apply(Beta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+exp(t(apply(Beta, 2, quantile, probs = c(0.5, 0.025, 0.975))))
+```
+
+\ 
+
+None of the exponentiated credible intervals contain 0, so we use each variable in the regression.
+
+\ 
+
+```{r}
+mat <- as.matrix(Beta   ) 
+colnames( Beta ) <-  names( coef(fit) )
+rmuList <- mcmc.list(list(mcmc(mat )))
+traplot( mat , greek = T )
+rmeanplot(mat , greek = T)
+par(mfrow = c(2,4)); autplot1( rmuList )
+geweke.diag( Beta  )
+```
+
+\ 
+
+
+  
+
+All the parameters looks as if they have converged, but there is some concern over the convergence of the \verb|workingday| parameter. Its Geweke diagnoistic is greater than 2, and it may not have converged from inspection of the running mean plot. However, it is not showing any drastic signs of not converging. 
+
+\ 
+
+
+Interpretation of the coefficients:
+
+\ 
+
+\verb|yr|: Holding all others constant, for an additional one unit in years, the expected rides for registered users increases by about 62\%.
+
+\ 
+
+\verb|holiday|: Holding all others constant, for holidays, the expected rides for registered users decreases about 10\%.
+
+\ 
+
+\verb|workingday|: Holding all others constant, for working days, the expected rides for registered users increases about 30\%.
+
+\ 
+
+\verb|temp|: Holding all others constant, for one additional unit of temperature, the expected rides for registered users decreases about 14\%.
+
+\
+
+\verb|atemp|: Holding all others constant, for one additional unit of ``feeling'' temperature, the expected rides for registered users increases about 351\%.
+
+\ 
+
+\verb|hum|: Holding all others constant, for one additional unit of humidity, the expected rides for registered users decreases about 33\%.
+
+\ 
+
+\verb|windspeed|: Holding all others constant, for one additional unit of windspeed, the expected rides for registered users decreases about 56\%.
+
+
+\ 
+
+\ 
+
+One big difference between the models is \verb|workingday| variable. For registered users it signals an increase in rides and for casual users it signals a decrease. This makes sense because many registered uses would probably use bikeshare for commuting to work. Also, the temperature variables do not have as big of an effect on the registered users. Again, this is because many of the registered users may use the bikes to commute to work.
+
