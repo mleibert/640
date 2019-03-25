@@ -3,6 +3,9 @@ setwd("G:\\math\\640")
 uber <- read.csv("uber1.csv")
 longlats <- read.csv("longlat.csv")
 
+
+ubers <- read.csv("biguber.csv")
+
 tail(uber)
 
 length( unique( uber[,1] ) )
