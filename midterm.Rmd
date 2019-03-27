@@ -1,0 +1,522 @@
+---
+title: ''
+output: pdf_document
+geometry: margin=.75 in
+header-includes:
+   - \usepackage{cancel}
+   - \usepackage{multirow,setspace}
+   - \usepackage{bm}
+   - \usepackage{amsmath}
+   - \usepackage{mathtools}
+   - \usepackage{amsfonts}
+   - \usepackage{amssymb}
+---
+
+
+
+```{r}
+rm(list = ls())
+setwd("G:\\math\\640")
+options(scipen=999)
+source("multiplot.R")
+require(VGAM, quietly=T); require(invgamma, quietly=T); require(mvtnorm, quietly=T);
+require(ggplot2, quietly=T); require(RColorBrewer, quietly=T); require(zoo, quietly=T)
+wind <- read.table("wind.txt",header = F)
+
+```
+
+
+
+\begin{align*}
+f(w_i) &= \cfrac{w_i}{\theta^2} \ \exp\left(-\cfrac{w_i^2}{2\theta^2}\right) \\[1.5 em]
+\mathcal{L}(W|\theta^2) & \propto \prod_{i=1}^n \cfrac{1}{\theta^2} \  \exp\left(-\cfrac{w_i^2}{2\theta^2}\right) \\[.25 em]
+&= \left(\theta^2\right)^{-n} \ \exp\left(-\cfrac{1}{2\theta^2} \sum_{i=1}^n w_i^2\right) \\[.25 em]
+\end{align*}
+
+A conjugate prior for $\theta^2$ is the inverse gamma
+\begin{align*}
+    \pi\left(\theta^2\right) & \propto \left(\theta^2\right)^{-\left(\alpha_0+1\right)} \ \exp\left( - \cfrac{\beta_0}{\theta^2} \right).
+\end{align*}
+
+And if we let $\alpha_0 = \beta_0 = 0$, we get an improper, non-informative flat prior
+\begin{align*}
+    \pi\left(\theta^2\right) & \propto \left(\theta^2\right)^{-1}. 
+\end{align*}
+
+Which leads to the posterior
+\begin{align*}
+    P(\theta^2 | W ) &\propto \left( \theta^2 \right)^{n+1}  \ \exp\left(-\cfrac{1}{2\theta^2} \sum_{i=1}^n w_i^2\right).
+\end{align*}
+
+And  
+\begin{align*}
+    \theta^2|W &\sim IG\left( n, \ \cfrac{1}{2 } \sum_{i=1}^n w_i^2   \right).
+\end{align*}
+
+
+\ 
+
+Or we could transform $\theta^2 = \mu^{-2}$
+
+\begin{align*}
+\mathcal{L}(W|\mu^{-2}) & \propto \prod_{i=1}^n  \mu^2 \  \exp\left(-\mu^2 \cfrac{w_i^2}{2 }\right) \\[.25 em]
+&= \left(\mu^2\right)^{n} \ \exp\left(-\cfrac{\mu^2}{2} \sum_{i=1}^n w_i^2\right) \\[1.425 em]
+\ell (W|\mu^{-2}) & \propto n \log\left(\mu^2\right) - \cfrac{\mu^2}{2} \sum_{i=1}^n w_i^2 \\[.5 em]
+\cfrac{\partial \ell}{\partial \left(\mu^2\right)} &\propto \cfrac{n}{\mu^2} - \cfrac{1}{2} \sum_{i=1}^n w_i^2 \\[.5 em]
+\cfrac{\partial^2 \ell}{\partial \left(\mu^2\right)^2} &\propto -\cfrac{n}{\left(\mu^2\right)^2} \\[0.75 em]
+\end{align*}
+\begin{align*}
+-E\left[\cfrac{\partial^2 \ell}{\partial \left(\mu^2\right)^2}\right] &= \left(\mu^2\right)^{-2}\\[.25 em]
+\left[J\left(\mu^2\right)\right]^{\frac{1}{2}} &= \left(\mu^2\right)^{-1}
+\end{align*}
+
+\begin{align*}
+    P\left( \mu^2 | W \right) & \propto  \left(\mu^2\right)^{n-1} \ \exp\left(-\cfrac{\mu^2}{2} \sum_{i=1}^n w_i^2\right) \\[1 em]
+    \mu^2 | W & \sim Gamma\left( n, \ \cfrac{1}{2 } \sum_{i=1}^n w_i^2   \right)
+\end{align*}
+
+
+\ 
+
+```{r, cache=T}
+n <- nrow(wind)
+Nsim <- 2000
+set.seed(17)
+thetatheta <- rinvgamma(Nsim , n+1 , (1/2)* sum(wind[,1]^2)   ) 
+quantile(thetatheta , probs = c(0.025, 0.5, 0.975))
+
+#mode
+theta <- sqrt( thetatheta  )
+summary(theta)
+quantile(theta, probs = c(0.025, 0.5, 0.975))
+
+qu <- quantile(theta , probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(theta)[[1]], round(density(theta)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+ 
+rmean <- theta * sqrt(  pi / 2 )
+
+summary(rmean )
+quantile(rmean, probs = c(0.025, 0.5, 0.975))
+
+qu <- quantile(rmean, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(rmean)[[1]], round(density(rmean)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+rmedian <- theta * sqrt(  2 * log(2) )
+summary(rmedian )
+
+summary(rmedian )
+quantile(rmedian, probs = c(0.025, 0.5, 0.975))
+
+qu <- quantile(rmedian, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(rmedian)[[1]], round(density(rmedian)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="green"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="green", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+```
+
+\ 
+
+```{r, cache=T}
+PPD <- thetatheta *0
+set.seed(17)
+for( i in 1:Nsim){  PPD[i] <- rrayleigh(1,  sqrt(thetatheta[i])) }
+
+qu <- quantile(PPD, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(PPD)[[1]], round(density(PPD)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+
+ggplot( data = d , aes(x=x , y=y)    ) + geom_line( col="purple"  ) +
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ), fill="purple", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()+
+   ggtitle("Sampled Posterior Density")
+ 
+ 
+sum(1*(PPD > 15))/length(PPD)
+```
+
+
+\newpage 
+
+
+The first model will be the casual users $y_c$. We first check to see if we should transform the outcome variable.
+
+\ 
+
+
+```{r, fig.width=6.5, fig.height=9.5}
+cb <- read.table("day.txt",header = T)
+
+par(mfrow=c(4,2) ,  mar=c(2.1,4.1,2.1,2.1) )
+ty <-  (  cb$casual ); plot(density(ty), main="non-transformed y"); qqnorm(ty); qqline(ty )
+ty <- scale(cb$casual) ; plot(density(ty), main="[y-mean(y)]/sd(y)"); qqnorm(ty); qqline(ty )
+ty <- sqrt(  cb$casual ); plot(density(ty), main="sqrt(y)"); qqnorm(ty); qqline(ty )
+ty <- log(  cb$casual ); plot(density(ty), main="log(y)"); qqnorm(ty); qqline(ty )
+```
+
+\ 
+
+The first row of plots shows that $y_c$ should probably be transformed to ensure normality. Of the three transformation choices presented here, it appears $\sqrt{y_c}$ provides a reasonable assumption of normality. Using example I.22 we find the following results.
+
+\ 
+
+Now assume the transformed variable $y'_c$ has the distribution 
+ 
+ \ 
+ 
+ \hfil \(\displaystyle y'_c  \sim N(X \bm{\beta}, \sigma^2 I_n) \)
+
+\ 
+
+The likelihood is then
+\begin{align*}
+\mathcal{L}\left( y | X, \pmb{\beta}, \sigma^2 \right) & \propto \left|\sigma^2 I_n\right|^{-\frac{1}{2}} \ \exp\left[ -\cfrac{1}{2}
+  \left(Y-X\pmb{\beta} \right)^T \left(\sigma^2 I_n\right) \left(y'_c -X\pmb{\beta} \right) \right] \\[.5 em]
+  & = \left( \sigma^2 \right)^{-\frac{n}{2}}  \ \exp\left[ -\cfrac{1}{2 \sigma^2 } \left(y'_c -X\pmb{\beta} \right)^T   \left(y'_c-X\bm{\beta} \right) \right] 
+\end{align*}
+
+With the joint prior
+
+ \hfil $\pi\left( \pmb{\beta} ,\sigma^2 \right)  \propto N(X \pmb{\beta} , \sigma^2 I_n)$
+
+ \ 
+
+which gives a joint posterior of 
+
+\ 
+
+ \hfil $P\left( \pmb{\beta}, \sigma^2 |  y , X  \right) \propto \left( \sigma^2 \right)^{-\frac{n}{2}-1}  \ \exp\left[ -\cfrac{1}{2 \sigma^2 } \left(y'_c -X\bm{\beta} \right)^T   \left(y'_c -X \pmb{\beta} \right) \right]$
+
+
+\ 
+
+
+We find 
+
+\hfil $\pmb{\beta} | \sigma^2 \sim N\left[\hat{\pmb{\beta}}, \sigma^2 \left[X^T X\right)^{-1} \right]$ 
+
+ \ 
+ 
+and
+
+\ 
+
+\hfil $\sigma^2 | X \sim IG\left[\cfrac{n-k}{2},\cfrac{1}{2} \left(y'_c  - X  \hat{\pmb{\beta}} \right)^T\left(y'_c- X  \hat{\pmb{\beta}} \right) \right]$.
+
+\ 
+
+Now we can perform the analysis.
+
+\ 
+
+```{r, cache = T}
+n <- nrow(cb )
+Nsim <- 20000
+y1 <- sqrt( cb[,1] )	#casual
+X <- as.matrix( cbind(1, cb[,-(1:2)] ) )
+colnames(X)	<- c("(Intercept)",colnames(cb[,-(1:2)] ))
+p <- ncol(X)
+
+bhat <-  (solve(t(X)%*%X)%*%(t(X)%*%y1))
+#fit <- ( lm( y1~X[,-1]  ));
+SSY <- SSYc <- t(y1 - X%*%bhat)%*%(y1 - X%*%bhat); #anova(fit)
+#vcov( fit )
+rbetas <- matrix(0, nrow = Nsim, ncol = p)
+XtXi	<- solve(t(X)%*%X)
+
+set.seed(13)
+rsig	<- rinvgamma(Nsim , (n-p)/2, (1/2)*SSY)
+for(i in 1:Nsim){
+	CovX	<- rsig[i]*XtXi
+	rbetas[i,] <- c(rmvnorm(1, mean = bhat, sigma = CovX ) )
+}
+
+ycrbetas <- rbetas
+rbMat	<- apply(rbetas, 2, quantile, probs = c(0.5, 0.025, 0.975))
+colnames(rbMat)	<- colnames(X) #coef(fit)
+rbMat <- as.data.frame( round(t(rbMat), 4) )
+rbMat$zero <- rbMat[,2] < 0 & rbMat[,3] > 0
+rbMat
+
+rbsum <- ( apply( rbetas , 2 , summary) )
+colnames(rbsum )	<- colnames(X)
+ rbsum <- t( rbsum ); rbsum
+```
+
+```{r, cache = T, fig.width=6.5, fig.height=9.5}
+colnames(rbetas)	<- colnames(X)
+plotz <- list()
+for( j in 1:ncol(X)) {
+	Tdat <- rbetas[,j]
+qu <- quantile(Tdat, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(Tdat)[[1]], round(density(Tdat)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+J <- ifelse( j == 2 , 9,j ); COLR <- brewer.pal(9,"Set3")[J]
+
+ plotz[[j]] <- ggplot( data = d , aes(x=x , y=y)    ) + 
+		geom_line( col=COLR  ) + theme_minimal()+
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ),
+		 fill=COLR , alpha = .15) + ylab("") +
+	theme(legend.position="none", axis.title.x=element_blank(), 
+		axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ 
+   	ggtitle( colnames(rbetas)[j] ) 
+ }
+
+
+multiplot(plotz[[1]], plotz[[2]], plotz[[3]], plotz[[4]],plotz[[5]], plotz[[6]], plotz[[7]], plotz[[8]], cols=2)
+```
+
+\ 
+```{r, eval=F}
+## Y 
+for( i in 1:Nsim) {Yc[  i,] <- rmvnorm(1,  (X %*%rbetas[i,])^2 , sigma = rsig[1] * diag(730) )}
+```
+
+```{r, echo = F}
+Yc <- apply(ycrbetas, 1 , function(B) (X%*%B)^2)
+```
+
+
+```{r, cache = T}
+## Y 
+ycplots <- list()
+ycsums <- list()
+
+DATES <-  seq( as.Date("2011-01-01"), as.Date("2012-12-31"), by="+1 day")
+DATES <-  DATES[-which( DATES  == "2012-02-29") ]
+rownames(Yc) <- gsub(" ","",as.character(as.yearqtr(DATES)))
+
+for( i in 1:length( unique(rownames(Yc)) ) ){
+ 	
+	yq <- unique(rownames(Yc))[i]
+ 	yq <-  Yc[ which( rownames(Yc) == yq ) , ] 
+	yq <-  colSums(yq) / dim(yq)[1] 
+	ycsums[[i]] <- summary(yq)
+	
+	qu <- quantile(yq, probs = c(0.5, 0.025, 0.975))[2:3]
+	d <- data.frame( density(yq)[[1]], round(density(yq)[[2]],6) )
+	colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+	J <- ifelse( i == 6 , 9,i ); COLR <- brewer.pal(9,"Set3")[J]
+	COLR <- brewer.pal(9,"Set1")[J]
+ 
+
+ ycplots[[i]] <- ggplot( data = d , aes(x=x , y=y)    ) + 
+		geom_line( col=COLR  ) + theme_minimal()+
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ),
+		 fill=COLR , alpha = .15) + ylab("") +
+	theme(legend.position="none", axis.title.x=element_blank(), 
+		axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ 
+   	ggtitle(  unique(rownames(Yc))[i] ) 
+ }
+
+ycsums <- as.matrix(do.call(rbind, ycsums))
+ycsums <- as.data.frame(t(ycsums))
+colnames(ycsums) <- paste0("Yc",unique(rownames(Yc)))
+```
+
+
+\ 
+
+
+We will conduct a similar analysis on registered users $y_r$.
+
+
+
+\ 
+
+```{r, cache = T, fig.width=6.5, fig.height=3.5}
+par(mfrow=c(1,2) ,  mar=c(2.1,4.1,2.1,2.1) )
+ty <-  (  cb[,2] ); plot(density(ty), main="non-transformed y"); qqnorm(ty); qqline(ty )
+```
+
+```{r, cache = T}
+n <- nrow(cb )
+Nsim <- 20000
+y1 <- ( cb[,2] )	
+X <- as.matrix( cbind(1, cb[,-(1:2)] ) )
+colnames(X)	<- c("(Intercept)",colnames(cb[,-(1:2)] ))
+p <- ncol(X)
+
+bhat <-  (solve(t(X)%*%X)%*%(t(X)%*%y1))
+#fit <- ( lm( y1~X[,-1]  )); coef(fit)
+SSY <- SSYr <- t(y1 - X%*%bhat)%*%(y1 - X%*%bhat); #anova(fit)
+#vcov( fit )
+rbetas <- matrix(0, nrow = Nsim, ncol = p)
+XtXi	<- solve(t(X)%*%X)
+
+set.seed(235)
+rsig	<- rinvgamma(Nsim , (n-p)/2, (1/2)*SSY)
+for(i in 1:Nsim){
+	CovX	<- rsig[i]*XtXi
+	rbetas[i,] <- c(rmvnorm(1, mean = bhat, sigma = CovX ) )
+}
+
+yrrbetas <- rbetas
+rbMat	<- apply(rbetas, 2, quantile, probs = c(0.5, 0.025, 0.975))
+colnames(rbMat)	<- colnames(X) #coef(fit)
+rbMat <- as.data.frame( round(t(rbMat), 4) )
+rbMat$zero <- rbMat[,2] < 0 & rbMat[,3] > 0
+rbMat
+
+rbsum <- ( apply( rbetas , 2 , summary) )
+colnames(rbsum )	<- colnames(X)
+ rbsum <- t( rbsum ); rbsum
+```
+
+```{r, cache = T, fig.width=6.5, fig.height=9.5}
+colnames(rbetas)	<- colnames(X)
+plotzz <- list()
+for( j in 1:ncol(X)) {
+	Tdat <- rbetas[,j]
+qu <- quantile(Tdat, probs = c(0.5, 0.025, 0.975))[2:3]
+d <- data.frame( density(Tdat)[[1]], round(density(Tdat)[[2]],6) )
+colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+J <- ifelse( j == 2 , 9,j ); COLR <- brewer.pal(9,"Set3")[J]
+
+ plotzz[[j]] <- ggplot( data = d , aes(x=x , y=y)    ) + 
+		geom_line( col=COLR  ) + theme_minimal()+
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ),
+		 fill=COLR , alpha = .15) + ylab("") +
+	theme(legend.position="none", axis.title.x=element_blank(), 
+		axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ 
+   	ggtitle( colnames(rbetas)[j] ) 
+ }
+
+
+multiplot(plotzz[[1]], plotzz[[2]], plotzz[[3]], plotzz[[4]],plotzz[[5]], plotzz[[6]], plotzz[[7]], plotzz[[8]], cols=2)
+```
+
+\ 
+
+```{r, eval=F}
+## Y 
+for( i in 1:Nsim) {Yr[  i,] <- rmvnorm(1,  (X %*%rbetas[i,])^2 , sigma = rsig[1] * diag(730) )}
+```
+
+```{r, echo = F}
+Yr <- apply(yrrbetas, 1 , function(B) (X%*%B))
+```
+
+```{r, cache = T}
+yrplots <- list()
+yrsums <- list()
+
+DATES <-  seq( as.Date("2011-01-01"), as.Date("2012-12-31"), by="+1 day")
+DATES <-  DATES[-which( DATES  == "2012-02-29") ]
+rownames(Yr) <- gsub(" ","",as.character(as.yearqtr(DATES)))
+
+for( i in 1:length( unique(rownames(Yr)) ) ){
+ 	
+	yq <- unique(rownames(Yr))[i]
+ 	yq <-  Yr[ which( rownames(Yr) == yq ) , ] 
+	yq <-  colSums(yq) / dim(yq)[1] 
+	yrsums[[i]] <- summary(yq)
+	 
+	qu <- quantile(yq, probs = c(0.5, 0.025, 0.975))[2:3]
+	d <- data.frame( density(yq)[[1]], round(density(yq)[[2]],6) )
+	colnames(d) = c("x" , "y" ); d$area <- d[,1] > qu[1] & d[,1] < qu[2]
+	J <- ifelse( i == 6 , 9,i ); COLR <- brewer.pal(9,"Set3")[J]
+	COLR <- brewer.pal(9,"Set1")[J]
+ 
+
+ yrplots[[i]] <- ggplot( data = d , aes(x=x , y=y)    ) + 
+		geom_line( col=COLR  ) + theme_minimal()+
+	geom_ribbon(data = d[which(d$area == T),], aes(x, ymin=0 , ymax=y ),
+		 fill=COLR , alpha = .15) + ylab("") +
+	theme(legend.position="none", axis.title.x=element_blank(), 
+		axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ 
+   	ggtitle(  unique(rownames(Yc))[i] ) 
+ }
+
+
+yrsums <- as.matrix(do.call(rbind, yrsums))
+yrsums <- as.data.frame(t(yrsums))
+colnames(yrsums) <- paste0("Yc",unique(rownames(Yr)))
+```
+
+\ 
+
+We can now compare the two outcome variables for the model. For simplicity, I have aggregated the in-model predictions. We know have their means by quarter. In other words, $X\hat{\pmb{\beta}}$ is an $730 \times 20000$ matrix. I have condensed the days into quarters by taking the mean count of users for each quarter. So we have the distribution of the mean (20000 observations) for the eight quarters in 2011-2012. It should be noted that the user count for casual riders is $\left(X\hat{\pmb{\beta}}\right)^2$ because of the square root transformation on $y_c$.
+
+The casual user's predictions will always come first. Here are the summaries:
+
+\
+
+```{r}
+ycsums
+yrsums
+```
+
+\ 
+
+There are many more registered riders than there are casual riders. They have similar jumps and falls in ridership as it gets warmer/colder. It is interesting to note that the jump for casual riders in Q1 to Q3 is about triple or quadruple. The jump for registered users in the same time period is less than double. 
+
+\ 
+
+Also it is clear that Capital Bikeshare increased in popularity from 2011 to 2012. It appears ridership almost doubles.
+
+\ 
+
+
+```{r, cache = T, fig.width=6.5, fig.height=4.25}
+multiplot(ycplots[[1]], ycplots[[2]], ycplots[[3]], ycplots[[4]],ycplots[[5]], ycplots[[6]], ycplots[[7]], ycplots[[8]], cols=2)
+```
+```{r, cache = T, fig.width=6.5, fig.height=4.25}
+multiplot(yrplots[[1]], yrplots[[2]], yrplots[[3]], yrplots[[4]],yrplots[[5]], yrplots[[6]], yrplots[[7]], yrplots[[8]], cols=2)
+```
+
+
+
+\ 
+
+Prediction (from Gelman pg. 357):
+
+```{r, cache=T}
+pred <- c(1,1,0,1,.344348,0.34847,0.804783,0.179117)
+
+ycp <- ycpreds <- apply( ycrbetas , 1 , function(B) (pred %*% B)^2 )
+ycpreds <- ycpreds*0
+
+set.seed(2011)
+rsig	<- rinvgamma(Nsim , (n-p)/2, (1/2)*SSYc)
+for(i in 1:Nsim){
+	ycpreds[i] <- (rnorm(1, mean = ycp[i], sqrt(rsig[i])  ) )
+}
+
+summary(ycpreds);quantile(ycpreds, probs = c(0.5, 0.025, 0.975))
+
+yrp <-  yrpreds <- apply( yrrbetas , 1 , function(B) pred %*% B )
+yrpreds <- yrpreds*0
+
+set.seed(2012)
+rsig	<- rinvgamma(Nsim , (n-p)/2, (1/2)*SSYr)
+for(i in 1:Nsim){
+	yrpreds[i] <- c(rnorm(1, mean = yrp[i], sqrt(rsig[i])  ) )
+}
+
+summary(yrpreds); quantile(yrpreds, probs = c(0.5, 0.025, 0.975))
+
+
+
+```
+
