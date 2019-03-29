@@ -72,3 +72,62 @@ t/count
 mean(theta)
 
  
+
+#####
+
+ ### Example II.R8 ###
+library(mvtnorm)
+library(MCMCpack)
+library(mcmcplots)
+setwd("G:\\math\\640")
+
+hers	<- read.table('hersreg.txt', header = TRUE)
+tail(hers)
+colnames(hers)[1] <- "x" 
+
+hers1 <- hers[ which(hers[ ,2] == 1), 1:2]
+hers0 <- hers[ which(hers[ ,2] == 0), 1:2]
+
+
+ 
+B	<- 10000
+A <- 2
+
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n0 <- nrow(hers0)
+
+
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (v+1)/2, v/ss[t-1] + 1/A^2 )
+  mu[t] <- rnorm(1, mean(hers0$x) , sqrt( ss[t-1] / n0) )
+  ss[t] <- rinvgamma( 1 , (n0+v)/2 ,  (.5   * sum( ( hers0$x - mu[t] )^2 ) )  - (v/Alpha[t]) )
+}
+ 
+Alpha <- tail(Alpha,B/2)
+mu <- tail(mu,B/2)
+ss <- tail(ss,B/2)
+
+
+
+B	<- 10000
+A <- 2
+
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n1 <- nrow(hers1)
+
+
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (v+1)/2, v/ss[t-1] + 1/A^2 )
+  mu[t] <- rnorm(1, mean(hers1$x) , sqrt( ss[t-1] / n1) )
+  ss[t] <- rinvgamma( 1 , (n1+v)/2 ,  (.5   * sum( ( hers1$x - mu[t] )^2 ) )  - (v/Alpha[t]) )
+}
+
+Alpha <- tail(Alpha,B/2)
+mu <- tail(mu,B/2)
+ss <- tail(ss,B/2)
+
+
