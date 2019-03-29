@@ -9,8 +9,9 @@ fx <- function(x){ ifelse( x < 0 , 0,
 
 ### U(0,1) ###
 curve(fx, from = 0-.05, to = 1+.05)
-
 M <- 2
+curve(M *dunif(x, 0, 1), add=TRUE, col="gold", lwd=2)
+
 theta	<- vector(length = 1000)
 arr <- NULL
 t <- 1
@@ -34,16 +35,13 @@ while(t < 100){
 
 
 t/count
-plot(density(theta), lwd = 8, col = 'blue')
-curve(dbeta(x, 6, 3), add = TRUE, col = 'red', lwd = 8)
 mean(theta)
 
 
 ### Beta(2,2) ###
 curve(fx, from = 0-.05, to = 1+.05 )
 M <- fx(.5) / ( (0.5)*(1-0.5) * (6) )
-
-curve(M *dbeta(x, 2, 2), add=TRUE, col="darkblue", lwd=2)
+curve(M *dbeta(x, 2, 2), add=T, col="darkblue", lwd=2)
 
 
 theta	<- vector(length = 1000)
@@ -69,8 +67,8 @@ while(t < 100){
 
 
 t/count
-plot(density(theta), lwd = 8, col = 'blue')
-curve(dbeta(x, 6, 3), add = TRUE, col = 'red', lwd = 8)
+#plot(density(theta), lwd = 8, col = 'blue')
+#curve(dbeta(x, 6, 3), add = TRUE, col = 'red', lwd = 8)
 mean(theta)
 
  

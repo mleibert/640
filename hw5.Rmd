@@ -1,0 +1,212 @@
+---
+title: ''
+output: pdf_document
+---
+
+
+ Let $y_i \stackrel{iid}{\sim} N(\mu, \alpha\sigma^2)$ and place the following priors on the model components: $\pi(\mu) \propto 1$, $\alpha \sim IG(a, b)$, and $\sigma^2 \sim IG(c, d)$ for constants $a, b, c,$ and $d$. This is an example of a parameter expanded normal model. Find the posterior and determine the full conditionals for the model. Using these, write the steps necessary to use a Gibbs sampler to draw samples from $\mu$, $\alpha$, and $\sigma^2$.
+
+\ 
+ 
+ \begin{align*}
+     \mathcal{L}(y_i|\mu, \sigma^2 , \alpha ) & \propto \left( \alpha \sigma^2 \right)^{-\frac{n}{2}} \ 
+    \exp\left[ \cfrac{1}{ \ 2\alpha \sigma^2 \ } \ \sum_i (y_i  - \mu )^2 \right] \\
+ \end{align*}
+
+\begin{align*}
+    p(\mu,\alpha, \sigma^2|y) &    \propto 
+    \left( \alpha \sigma^2 \right)^{-\frac{n}{2}} \ 
+    \exp\left[ \cfrac{1}{ \ 2\alpha \sigma^2 \ } \ \sum_i (y_i - \mu )^2 \right] \ 
+    \cfrac{b^a}{\Gamma\left( a \right)} \   \alpha^{-\left(a +1\right)} \ 
+         \exp\left[ - \cfrac{b}{\alpha } \right] \
+    \cfrac{d^c}{\Gamma\left( c \right)} \ 
+    \left( \sigma^2 \right)^{-\left( c +1\right)} \ 
+    \exp\left[ - \cfrac{d}{\sigma^2 } \right] \\[.5 em]
+    & \propto \left( \alpha \sigma^2 \right)^{-\frac{n}{2}} \ 
+    \exp\left[ \cfrac{1}{ \ 2\alpha \sigma^2 \ } \ \sum_i (y_i - \mu )^2 \right] \ 
+      \alpha^{-\left(a +1\right)} \ 
+         \exp\left[ - \cfrac{b}{\alpha } \right] \
+    \left( \sigma^2 \right)^{-\left( c +1\right)} \ 
+    \exp\left[ - \cfrac{d}{\sigma^2 } \right] \\[.5 em]
+\end{align*}
+
+
+\begin{align*}
+    p( \alpha | \mu , \sigma^2, y) & \propto 
+     \alpha^{-\frac{n}{2}} \ 
+    \exp\left[ -\cfrac{1}{ \ 2\alpha \sigma^2 \ } \ \sum_i (y_i - \mu )^2 \right] \
+     \alpha^{-\left(a +1\right)} \ \exp\left[ -\cfrac{b}{\alpha } \right] \\[.5 em]
+   & \propto \alpha^{- \left( \frac{n}{2} +a + 1 \right) } \ 
+     \exp\left[ - \cfrac{1}{ \  \alpha \ } \ \left( b + \cfrac{1}{ 2\sigma^2 } \sum_i (y_i - \mu )^2 \right) \right] \\[1 em]
+  \alpha | \mu , \sigma^2, y   & \sim IG\left(  \frac{n}{2} +a , \ 
+    b + \cfrac{1}{ 2\sigma^2 } \sum_i (y_i - \mu )^2  \right) \\
+\end{align*}
+
+
+\begin{align*}
+    p( \sigma^2 | \mu ,\alpha , y) & \propto 
+    \left( \sigma^2 \right)^{-\frac{n}{2}} \ 
+    \exp\left[-\cfrac{1}{ \ 2\alpha \sigma^2 \ } \ \sum_i (y_i - \mu )^2 \right] \ 
+    \left( \sigma^2 \right)^{-\left( c +1\right)} \ 
+    \exp\left[ - \cfrac{d}{\sigma^2 } \right] \\[.5 em]
+    & \propto \left( \sigma^2 \right)^{- \left( \frac{n}{2} + c + 1 \right) } \ 
+    \exp\left[ - \cfrac{1}{ \ \sigma^2 \ } \ \left( d + \cfrac{1}{2\alpha}
+        \sum_i (y_i - \mu )^2 \right) \right] \\[1 em] 
+  \sigma^2 | \mu , \alpha^2, y   & \sim IG\left(  \frac{n}{2} + c , \ 
+    d + \cfrac{1}{ 2\alpha  } \sum_i (y_i - \mu )^2  \right) \\
+\end{align*}
+
+\begin{align*}
+    p( \mu | \sigma^2 , \alpha^2, y ) & \propto 
+    \exp\left[ - \cfrac{1}{ \ 2\alpha \sigma^2 \ } \ 
+        \sum_i (y_i - \mu )^2 \right] \          \\[.5 em]
+    & \propto \exp\left[ - \cfrac{1}{ \ 2\frac{ \ \alpha \sigma^2 \ }{n} \ } \
+        \sum_i ( \mu - \Bar{y} )^2 \right] \\[1 em]
+     \mu | \sigma^2,\alpha ,y & \sim N\left(\Bar{y} , \ 
+        \cfrac{ \ \alpha \sigma^2 \ }{n} \right)
+\end{align*}
+
+
+
+ \newpage
+ 
+Let $x_i \stackrel{iid}{\sim} N(\mu, \sigma^2)$ and place the flat prior on $\mu$, $\pi(\mu) \propto 1$. Next assume $\sigma^2 \sim IG(v/2, v/\alpha)$ and $\alpha \sim IG(1/2, 1/A^2)$ for fixed values $v$ and $A$. When $v = 1$, this prior and hyperprior combination are equivalent to placing a Half-Cauchy prior with scale $A$ on $\sigma^2$---a useful prior for variances, particularly when they are near zero. Express the posterior and determine the full conditionals for the model. Then write out the steps for the Gibbs sampler to draw samples from $\mu$, $\sigma^2$, and $\alpha$.
+
+
+ \
+ 
+ \begin{align*}
+     \mathcal{L}(x_i|\mu, \sigma^2 ) \propto \left( \sigma^2 \right)^{-\frac{n}{2}}
+     \  \exp\left[ \cfrac{1}{2\sigma^2} \ \sum_i (x_i  - \mu )^2 \right]
+ \end{align*}
+ 
+ \begin{align*}
+     p(\mu,\sigma^2,\alpha | x ) & \propto  \left( \sigma^2 \right)^{-\frac{n}{2}}  \
+         \exp\left[ - \cfrac{1}{2\sigma^2} \ \sum_i (x_i  - \mu )^2 \right] \ 
+         \cfrac{\left(\frac{v}{\alpha}\right)^\frac{v}{2}}{\Gamma\left( \frac{v}{2} \right)} \  \left( \sigma^2 \right)^{-\left(\frac{v}{2}+1\right)} \ 
+         \exp\left[ - \cfrac{\frac{v}{\alpha}}{\sigma^2} \right] \ 
+         \cfrac{ \frac{1}{A^2}  }{ \Gamma\left(\frac{1}{2}\right) } \ 
+         \alpha^{-\left(\frac{1}{2} +1 \right)} \ 
+         \exp\left[ - \cfrac{\frac{1}{A^2}}{\alpha}\right] \\[0.5 em]
+        & \propto  \left( \sigma^2 \right)^{-\left(\frac{n+v}{2}+1\right)} \ 
+         \exp\left[ - \cfrac{1}{2\sigma^2} \ \sum_i (x_i  - \mu )^2 \right] \ 
+         \left(\cfrac{v}{\alpha}\right)^\frac{v}{2} \ 
+         \exp\left[ - \cfrac{v}{\alpha \sigma^2} \right] \ \alpha^{-1.5} \ 
+         \exp\left[ - \cfrac{1}{A^2 \alpha} \right]
+ \end{align*}
+
+
+\ 
+
+\begin{align*}
+    p(\alpha|\mu,\sigma^2,y) &\propto          \left(\cfrac{v}{\alpha}\right)^\frac{v}{2} \ 
+    \exp\left[ - \cfrac{v}{\alpha \sigma^2} \right] \ \alpha^{-1.5} \ 
+    \exp\left[ - \cfrac{1}{A^2 \alpha} \right] \\[.5 em]
+    & \propto \alpha^{-\left( \frac{v+1}{2}+1\right)} \ 
+    \exp\left[ - \cfrac{1}{\alpha} \left( \cfrac{v}{\sigma^2} + \cfrac{1}{A^2} \right) \right] \\[1 em]
+\alpha|\mu,\sigma^2,y & \sim IG\left(  \frac{v+1}{2} , \ \cfrac{v}{\sigma^2} + \cfrac{1}{A^2} \right) \\ 
+\end{align*}
+
+\begin{align*}
+    p(\sigma^2|\mu,\alpha ,y) & \propto \left( \sigma^2 \right)^{-\left(\frac{n+v}{2}+1\right)} \ 
+         \exp\left[ - \cfrac{1}{2\sigma^2} \ \sum_i (x_i  - \mu )^2 \right] \ 
+         \exp\left[ - \cfrac{v}{\alpha \sigma^2} \right]   \\[.5 em]
+    & \propto \left( \sigma^2 \right)^{-\left(\frac{n+v}{2}+1\right)} \
+     \exp\left[ - \cfrac{1}{ \sigma^2} \ \left(  \cfrac{v}{\alpha }   + 
+   \cfrac{1}{2} \sum_i (x_i  - \mu )^2 \right) \right] \\[1 em]
+   \sigma^2|\mu,\alpha ,y  & \sim IG\left( \cfrac{n+v}{2} , \ 
+    \cfrac{v}{\alpha }   +    \cfrac{1}{2} \sum_i (x_i  - \mu )^2 \right) \\
+\end{align*}
+ 
+ \begin{align*}
+     p( \mu | \sigma^2,\alpha ,y) & \propto 
+     \exp\left[ - \cfrac{1}{2\sigma^2} \ \sum_i (x_i  - \mu )^2 \right] \\[.5em]
+     & \propto \exp\left[ - \cfrac{1}{ \ 2\frac{\sigma^2}{n} \ } \
+        \sum_i ( \mu - \Bar{x} )^2 \right] \\[1 em]
+    \mu | \sigma^2,\alpha ,y & \sim N\left(\Bar{x} , \ \cfrac{\sigma^2}{n} \right)  
+ \end{align*}
+
+
+
+
+\newpage 
+
+Suppose we wish to sample from the triangular distribution which has density function
+		\begin{align*}
+			p(\theta) = \left\{ \begin{array}{ll}
+						0 & \theta < 0 \\
+						4\theta & 0 \leq \theta < 1/2\\
+						4-4\theta & 1/2 \leq \theta \leq 1\\
+						0 & \theta > 1\\
+						\end{array} \right. .
+		\end{align*}
+		This density arises as the mean of two uniformly distributed random variables. One approach to sampling from $p(\theta)$ is to use rejection sampling. For your sampler, consider two different forms of $g(\theta)$: first, let $g(\theta)$ be the standard uniform density and second, let $g(\theta)$ be the $Beta(2,2)$ density. For both proposal densities, you will need to determine the values of $M$ such that $p(\theta) \leq Mg(\theta)$. For each $g(\theta)$, first write a rejection sampler to obtain 1000 samples from $p(\theta)$. Then compare the resulting sampled distributions as well as the acceptance rate. Is one $g(\theta)$ more efficient than the other? Explain. For each sampler, set the seed to 52918.
+
+\ 
+
+
+```{r}
+fx <- function(x){ ifelse( x < 0 , 0,
+	ifelse( 0 <= x & x < 0.5 ,  4*x ,
+	ifelse( 0.5 <= x & x <= 1, 4-4*x,  
+	ifelse(  x < 1, 0, 0 )
+)))}
+
+
+### U(0,1) ###
+curve(fx, from = 0-.05, to = 1+.05)
+M <- 2
+curve(M *dunif(x, 0, 1), add=TRUE, col="gold", lwd=2)
+
+theta	<- vector(length = 1000)
+arr <- NULL
+t <- 1
+count	<- 1
+
+while(t < 100){
+ 
+	tb	<- runif(1)
+	U	<- runif(1)
+ 	
+	r <- fx(tb) / (M*dunif(tb))
+	if(U < r){
+		theta[t] <- tb
+		t <- t + 1	
+	points( tb , M*U , col = "red" , pch = 16) } else {
+	points( (tb) ,M*U , col = "blue" , pch = 4) }
+	count	<- count + 1 }
+
+t/count
+mean(theta)
+
+
+### Beta(2,2) ###
+curve(fx, from = 0-.05, to = 1+.05 )
+M <- fx(.5) / ( (0.5)*(1-0.5) * (6) )
+curve(M *dbeta(x, 2, 2), add=T, col="darkblue", lwd=2)
+
+
+theta	<- vector(length = 1000)
+arr <- NULL
+t <- 1
+count	<- 1
+
+while(t < 100){
+ 
+	tb	<- rbeta(1,2,2)
+	U	<- runif(1)
+ 	
+	r <- fx(tb) / (M*dbeta(tb,2,2))
+	if(U < r){
+		theta[t] <- tb
+		t <- t + 1	
+	points( tb , M*U*dbeta(tb,2,2) , col = "red" , pch = 16) } else {
+	points( (tb) ,M*U*dbeta(tb,2,2) , col = "blue" , pch = 4) }
+	count	<- count + 1 }
+
+t/count
+#plot(density(theta), lwd = 8, col = 'blue')
+#curve(dbeta(x, 6, 3), add = TRUE, col = 'red', lwd = 8)
+mean(theta)
+```
+
