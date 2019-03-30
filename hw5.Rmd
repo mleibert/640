@@ -3,7 +3,38 @@ title: ''
 output: pdf_document
 ---
 
+Let $\theta$ be a random variable with density $p(\theta)$---the target density---and $\theta^*$ be a random variable with density $g(\theta^*)$---the proposal density. Further, let $M$ be some finite, nonnegative value such that $p(\theta) \leq Mg(\theta)$. Prove that the rejection sampler (or accept/reject algorithm) results in samples from the target density. Hint: It is useful to begin by working with the CDF of $\theta$, $P(\theta \leq a)$, and noting that conditional on the acceptance rule, $P(\theta \leq a) = P(\theta^* \leq a |$ accept $\theta^*)$.
+	
+	
+	
+	
+Let $Y \sim f_Y(y)$ and $V \sim f_V(V)$, where $f_Y$ and $f_V$ have common support with \(\displaystyle M = \sup_y \cfrac{f_Y(y)}{ \  M f_V(y)\ } < \infty\)
 
+\ 
+
+To generate a random variable $Y \sim f_Y$:
+\begin{itemize}
+    \item[a.] Generate $U\sim Unif(0,1)$ and $V \sim f_V$, independent.
+    \item[b.] If \(\displaystyle U < \cfrac{f_Y(V)}{ \ Mf_V(V) \ }\), set $Y= V$; otherwise, return to step (a)
+\end{itemize}
+
+\ 
+
+The generated random variable $Y$ has cdf $P(Y\leq y )$
+
+\begin{align*}
+    P(Y\leq y ) &= P(V \leq y | accept ) \\[.5 em]
+    &= P \left( V \leq y \  \bigg|  \  U < \cfrac{f_Y(V)}{ \ M f_V(V)  \ } \ \right)  \\[.5 em]
+    &= \cfrac{  \ P\left( V \leq y, U < \frac{f_Y(V)}{ \ M f_V(V) \ } \right)  \ }{P\left( U <     
+        \frac{f_Y(V)}{    \ M f_V(V) \ }\right)}  \\[.5 em]
+    &= \cfrac{ \  \displaystyle \int\limits_{-\infty}^y \int_0^{\frac{f_Y(v)}{  Mf_V(v)  }} \  \text{d}u \  f_V(v) \  \text{d}v \ }{ \  \displaystyle \int\limits_{-\infty}^\infty   \int_0^{\frac{f_Y(v)}{  Mf_V(v)  }} \  \text{d}u \  f_V(v) \  \text{d}v \ }    \\[.5 em]
+   &= \int_{-\infty}^y f_Y(v) \  \text{d}v 
+\end{align*}
+
+which is the desired cdf.
+
+\newpage 
+	
  Let $y_i \stackrel{iid}{\sim} N(\mu, \alpha\sigma^2)$ and place the following priors on the model components: $\pi(\mu) \propto 1$, $\alpha \sim IG(a, b)$, and $\sigma^2 \sim IG(c, d)$ for constants $a, b, c,$ and $d$. This is an example of a parameter expanded normal model. Find the posterior and determine the full conditionals for the model. Using these, write the steps necessary to use a Gibbs sampler to draw samples from $\mu$, $\alpha$, and $\sigma^2$.
 
 \ 
