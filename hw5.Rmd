@@ -4,7 +4,57 @@ output: pdf_document
 ---
 
 
- Let $y_i \stackrel{iid}{\sim} N(\mu, \alpha\sigma^2)$ and place the following priors on the model components: $\pi(\mu) \propto 1$, $\alpha \sim IG(a, b)$, and $\sigma^2 \sim IG(c, d)$ for constants $a, b, c,$ and $d$. This is an example of a parameter expanded normal model. Find the posterior and determine the full conditionals for the model. Using these, write the steps necessary to use a Gibbs sampler to draw samples from $\mu$, $\alpha$, and $\sigma^2$.
+Michael Leibert
+
+Math 640
+
+HW 5
+
+\ 
+
+\Large
+Theoretical Exercises
+\normalsize  
+
+\ 
+
+
+1. Let $\theta$ be a random variable with density $p(\theta)$---the target density---and $\theta^*$ be a random variable with density $g(\theta^*)$---the proposal density. Further, let $M$ be some finite, nonnegative value such that $p(\theta) \leq Mg(\theta)$. Prove that the rejection sampler (or accept/reject algorithm) results in samples from the target density. Hint: It is useful to begin by working with the CDF of $\theta$,$P(\theta \leq a)$, and noting that conditional on the acceptance rule, $P(\theta \leq a) = P(\theta^* \leq a |$ accept $\theta^*)$.
+
+
+\ 
+
+
+
+Let $\theta \sim p(\theta)$ and $\theta^* \sim g(\theta^*)$, where $p(\theta)$ and $g(\theta^*)$ have common support with \(\displaystyle M = \sup_\theta \cfrac{p(\theta)}{ \  M g(\theta^*) \ } < \infty\)
+
+\ 
+
+To generate a random variable $\theta \sim p(\theta)$:
+\begin{itemize}
+    \item[a.] Generate $U\sim Unif(0,1)$ and $\theta^* \sim g(\theta^*)$, independent.
+    \item[b.] If \(\displaystyle U < \cfrac{p(\theta^*)}{ \ M g(\theta^*)   \ }\),
+        set $\theta  = \theta^*$; otherwise, return to step (a)
+\end{itemize}
+\ 
+
+The generated random variable $\theta$ has cdf $P( \theta \leq a )$
+
+\begin{align*}
+    P( \theta \leq a ) &= P( \theta^* \leq a | \text{accept } \theta^* ) \\[.5 em]
+    &= P \left( \theta^* \leq a \  \bigg|  \  U <  \cfrac{p(\theta^*)}{ \ M g(\theta^*)  \ } \ \right)  \\[.5 em]
+    &= \cfrac{  \ P\left( \theta^* \leq a, U <  \cfrac{p(\theta^*)}{ \ M g(\theta^*)  \ } \right)  \ }{P\left( U <     
+        \cfrac{p(\theta^*)}{ \ M g(\theta^*)  \ } \right)}  \\[.5 em]
+    &= \cfrac{ \  \displaystyle \int\limits_{-\infty}^a \int_0^{ \frac{p(\theta^*)}{ M g(\theta^*)  } } \  \text{d}\theta  \  g(\theta^*) \  \text{d}\theta^* \ }{ \  \displaystyle \int\limits_{-\infty}^\infty   \int_0^{\frac{p(\theta^*)}{ M g(\theta^*)  } } \  \text{d}\theta \  g(\theta^*) \ \text{d}\theta^* \ }    \\[.5 em]
+   &= \int_{-\infty}^a  p(\theta^*) \  \text{d}\theta^* 
+\end{align*}
+
+which is the desired cdf.
+
+\newpage
+
+
+2. Let $y_i \stackrel{iid}{\sim} N(\mu, \alpha\sigma^2)$ and place the following priors on the model components: $\pi(\mu) \propto 1$, $\alpha \sim IG(a, b)$, and $\sigma^2 \sim IG(c, d)$ for constants $a, b, c,$ and $d$. This is an example of a parameter expanded normal model. Find the posterior and determine the full conditionals for the model. Using these, write the steps necessary to use a Gibbs sampler to draw samples from $\mu$, $\alpha$, and $\sigma^2$.
 
 \ 
  
@@ -66,11 +116,22 @@ output: pdf_document
         \cfrac{ \ \alpha \sigma^2 \ }{n} \right)
 \end{align*}
 
+\ 
+
+
+3. Steps necessary to use a Gibbs sampler ($b^*$ some constant):
+
+\begin{align*}
+  \alpha^{(b)} & \sim  IG\left(  \frac{n}{2} +a , \     b^* + \cfrac{1}{ 2 \left(\sigma^2\right)^{(b-1)} } \sum_i \left(y_i - \mu^{(b-1)} \right)^2  \right) \\[.5 em]
+  \sigma^{2^{(b)}} & \sim IG\left(  \frac{n}{2} + c , \ d + \cfrac{1}{ 2\alpha^{(b)}  } \sum_i \left(y_i - \mu^{(b-1)} \right)^2  \right) \\[.5 em]
+  \mu^{(b)} & \sim N\left(\Bar{y} , \ \cfrac{ \ \alpha^{(b)} \left(\sigma^2\right)^{(b)} \ }{n} \right)
+\end{align*}
 
 
  \newpage
+  
  
-Let $x_i \stackrel{iid}{\sim} N(\mu, \sigma^2)$ and place the flat prior on $\mu$, $\pi(\mu) \propto 1$. Next assume $\sigma^2 \sim IG(v/2, v/\alpha)$ and $\alpha \sim IG(1/2, 1/A^2)$ for fixed values $v$ and $A$. When $v = 1$, this prior and hyperprior combination are equivalent to placing a Half-Cauchy prior with scale $A$ on $\sigma^2$---a useful prior for variances, particularly when they are near zero. Express the posterior and determine the full conditionals for the model. Then write out the steps for the Gibbs sampler to draw samples from $\mu$, $\sigma^2$, and $\alpha$.
+3. Let $x_i \stackrel{iid}{\sim} N(\mu, \sigma^2)$ and place the flat prior on $\mu$, $\pi(\mu) \propto 1$. Next assume $\sigma^2 \sim IG(v/2, v/\alpha)$ and $\alpha \sim IG(1/2, 1/A^2)$ for fixed values $v$ and $A$. When $v = 1$, this prior and hyperprior combination are equivalent to placing a Half-Cauchy prior with scale $A$ on $\sigma^2$---a useful prior for variances, particularly when they are near zero. Express the posterior and determine the full conditionals for the model. Then write out the steps for the Gibbs sampler to draw samples from $\mu$, $\sigma^2$, and $\alpha$.
 
 
  \
@@ -127,11 +188,27 @@ Let $x_i \stackrel{iid}{\sim} N(\mu, \sigma^2)$ and place the flat prior on $\mu
  \end{align*}
 
 
+Steps necessary to use a Gibbs sampler:
+ 
+ 
+\begin{align*}
+  \alpha^{(b)} & \sim  IG\left(  \frac{v+1}{2} , \ \cfrac{v}{\left(\sigma^2\right)^{(b-1)}} + \cfrac{1}{A^2} \right)  \\[.5 em]
+  \left(\sigma^2\right)^{(b)} & \sim IG\left( \cfrac{n+v}{2} , \     \cfrac{v}{\alpha^{(b)} }   +    \cfrac{1}{2} \sum_i \left(x_i  - \mu^{(b-1)} \right)^2 \right)  \\[.5 em]
+    \mu^{(b)} &  \sim N\left(\Bar{x} , \ \cfrac{\left(\sigma^2\right)^{(b)}}{n} \right) 
+\end{align*}
 
-
+ 
+ 
 \newpage 
 
-Suppose we wish to sample from the triangular distribution which has density function
+
+\Large
+Computing Exercises
+\normalsize  
+
+\ 
+
+1. Suppose we wish to sample from the triangular distribution which has density function
 		\begin{align*}
 			p(\theta) = \left\{ \begin{array}{ll}
 						0 & \theta < 0 \\
@@ -141,6 +218,38 @@ Suppose we wish to sample from the triangular distribution which has density fun
 						\end{array} \right. .
 		\end{align*}
 		This density arises as the mean of two uniformly distributed random variables. One approach to sampling from $p(\theta)$ is to use rejection sampling. For your sampler, consider two different forms of $g(\theta)$: first, let $g(\theta)$ be the standard uniform density and second, let $g(\theta)$ be the $Beta(2,2)$ density. For both proposal densities, you will need to determine the values of $M$ such that $p(\theta) \leq Mg(\theta)$. For each $g(\theta)$, first write a rejection sampler to obtain 1000 samples from $p(\theta)$. Then compare the resulting sampled distributions as well as the acceptance rate. Is one $g(\theta)$ more efficient than the other? Explain. For each sampler, set the seed to 52918.
+
+\ 
+
+For the standard uniform proposal:
+
+\ 
+
+
+\hfil \(\displaystyle M = \sup_\theta \ \cfrac{P(\theta)}{g(\theta)} = \sup_\theta \begin{cases}
+\hfil 0 & \theta < 0\\[.1 em]
+\hfil 4\theta & 0 \leq \theta < \cfrac{1}{2} \\[.1 em]
+\hfil 4-4\theta & \cfrac{1}{2} \leq \theta \leq 1 \\[.6 em]
+\hfil 0 & \theta > 1
+\end{cases} \  = \  \sup_\theta \ 4-4\theta = 4-4(0.5) = 2 \).
+
+
+\vspace{3 em}
+
+For the $Beta(2,2)$ proposal:
+
+\ 
+
+\hfil \(\displaystyle M = \sup_\theta \ \cfrac{P(\theta)}{g(\theta)} = \sup_\theta \begin{cases}
+\hfil 0 & \theta < 0\\[.1 em]
+\hfil \cfrac{4\theta}{ \  6\theta(1-\theta) \ } & 0 \leq \theta < \cfrac{1}{2} \\[1 em]
+\hfil \cfrac{4-4\theta }{ \  6\theta(1-\theta) \ } & \cfrac{1}{2} \leq \theta \leq 1 \\[1 em]
+\hfil 0 & \theta > 1
+\end{cases} \  = \  \sup_\theta \ \cfrac{4-4\theta }{ \  6\theta(1-\theta) \ } = 
+\cfrac{4-4(0.5) }{ \  6(0.5)(1-(0.5)) \ } = \cfrac{8}{6} \).
+
+
+\ 
 
 \ 
 
@@ -163,7 +272,8 @@ arr <- NULL
 t <- 1
 count	<- 1
 
-while(t < 100){
+set.seed(52918)
+while(t < 1000){
  
 	tb	<- runif(1)
 	U	<- runif(1)
@@ -177,7 +287,6 @@ while(t < 100){
 	count	<- count + 1 }
 
 t/count
-mean(theta)
 
 
 ### Beta(2,2) ###
@@ -191,7 +300,8 @@ arr <- NULL
 t <- 1
 count	<- 1
 
-while(t < 100){
+set.seed(52918)
+while(t < 1000){
  
 	tb	<- rbeta(1,2,2)
 	U	<- runif(1)
@@ -205,8 +315,498 @@ while(t < 100){
 	count	<- count + 1 }
 
 t/count
-#plot(density(theta), lwd = 8, col = 'blue')
-#curve(dbeta(x, 6, 3), add = TRUE, col = 'red', lwd = 8)
-mean(theta)
 ```
 
+\ 
+
+The acceptance rate for the $Beta(2,2)$ is about 24 percentage points higher and much more efficient than the standard uniform. We can see that the ``envelope'' that the $Beta(2,2)$ forms around the target is much tighter than the one formed around the target from the standard uniform.
+
+
+
+\
+
+
+\ 
+
+\ 
+
+\Large
+Analysis Exercises
+\normalsize  
+
+\ 
+
+Data: for the following exercise, use the dataset \texttt{hersreg.txt} from the course data file which we've used several times class. As a reminder, the data comes from the Heart and Estrogin-progestin Replacement Study (HERS) which was a randomized, blinded trial in post menopausal women with coronary artery disease. The study aimed to test the hypothesis that, among women with anintact uterus, those randomized to receive estrogen-progestin replacement therapy (premanrin .625 mg daily plus medroxygrprogesterone acetate 2.5 mg daily) have the same frequency of new coronary heart disease (CHD) events, such as myocardial infarction (MI) and death due to CHD, as those randomized to placebo.  The variable \texttt{treatment} denotes the treatment groups, coded as\texttt{placebo} and \texttt{hormone therapy}, while the variable \texttt{chtchol} denotes the change in total cholesterol.\begin{enumerate}\item One result we can examine as a proxy to incidence of MI and CHD death is change in total cholesterol over the study period. Each woman in the study had cholesterol levels taken from blood samples at the beginning and end of follow-up. We wish to build models to determine posterior estimates for the mean change in total cholesterol for each treatment group. For both groups, we will compare two likelihoods:
+\begin{enumerate}\item First, build two normal models, one for each treatment group. Use the Gibbs sampler from TE.2 to draw your samples, making the priors non-informative.\item Second, build two non-central $t$-likelihood models assuming the scale parameter is fixed at the sample standard deviation with degrees of freedom equal to $n - 1$. Taking the non-informative flat prior, $\pi(\mu) \propto 1$, and using a Cauchy centered at the sample median as your proposal, sample from this posterior using rejection sampling (you will need to determine a value for $M$).\end{enumerate}For each unknown parameter in both sets of models, generate convergence diagnostics (both visual and numerical, use Geweke for the later), find the 95\% credible intervals, and the posterior medians. Also, under each likelihood, test to see if there is a difference in means between treatment groups. Compare your results. Use $B = 10000$ posterior samples and set the seedto 32717 for the normal models and 50814 for the $t$ models.
+\end{enumerate}
+
+
+\ 
+
+Normal Model for the Placebo Group
+
+\ 
+
+```{r }
+setwd("G:\\math\\640")
+require(mvtnorm, quietly = T)
+suppressMessages(require(MCMCpack, quietly = T))
+require(mcmcplots, quietly = T)
+suppressMessages(require(invgamma, quietly = T))
+require(ggplot2, quietly = T)
+source("multiplot.R")
+
+hers <- read.table('hersreg.txt', header = T)
+colnames(hers)[1] <- "y" 
+
+hers0 <- hers[ which(hers[ ,2] == 0), 1:2]
+ 
+B <- 10000
+
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n <- nrow(hers0)
+
+
+a <- b <- cc <- d <- .0001
+
+set.seed(32717)
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (n)/2 + a,	b + (1/ 2 * ss[t-1])  * sum( (hers0$y - mu[t-1] )^2 ) )
+  mu[t] <- rnorm(1, mean(hers0$y) , sqrt( Alpha[t-1]*ss[t-1] / n) )
+  ss[t] <- rinvgamma( 1 , (n/2)+ cc ,  d + (1/(2*Alpha[t])) *		 sum( ( hers0$y - mu[t] )^2 )   )
+} 
+
+# Burn in
+Alpha <- matrix( tail(Alpha,B/2), ncol = 1);colnames(Alpha) <- "alpha"  
+mu <- mu0a <- matrix( tail(mu,B/2), ncol = 1);colnames(mu) <- "mu" 
+ss <- matrix( tail(ss,B/2), ncol = 1);colnames(ss) <- "sigma^2"
+
+mcmcplot1(  ss , greek = T )
+mcmcplot1(  Alpha, greek = T )
+mcmcplot1(  mu , greek = T)
+
+Theta <- matrix( c(Alpha,mu,ss) , ncol = 3 ); colnames(Theta) <- c("Alpha","mu","ss")
+t(apply(Theta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+geweke.diag(mcmc(Theta))
+
+median(mu)
+median(ss)
+median(Alpha)
+```
+```{r,echo = F}
+
+qu <- quantile( as.vector(mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(mu)[[1]], round(density(mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+mup <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(ss) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(ss)[[1]], round(density(ss)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ssp <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(Alpha) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Alpha)[[1]], round(density(Alpha)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+alphap <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="green"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="green", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+multiplot(mup, ssp, alphap, cols=3)
+```
+
+\ 
+
+
+$\sigma^2$ and $\alpha$  are not converging well, so we select some new values for $a$, $b$, $c$, $d$ and reevaluate.
+
+\ 
+
+
+```{r }
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n <- nrow(hers0)
+
+
+a <- b <- .1
+  cc <- d <- 50
+
+set.seed(32717)
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (n)/2 + a,	b + (1/ 2 * ss[t-1])  * sum( (hers0$y - mu[t-1] )^2 ) )
+  mu[t] <- rnorm(1, mean(hers0$y) , sqrt( Alpha[t-1]*ss[t-1] / n) )
+  ss[t] <- rinvgamma( 1 , (n/2)+ cc ,  d + (1/(2*Alpha[t])) *		 sum( ( hers0$y - mu[t] )^2 )   )
+} 
+
+# Burn in
+Alpha <- matrix( tail(Alpha,B/2), ncol = 1);colnames(Alpha) <- "alpha"  
+mu <- mu0b <- matrix( tail(mu,B/2), ncol = 1);colnames(mu) <- "mu" 
+ss <- matrix( tail(ss,B/2), ncol = 1);colnames(ss) <- "sigma^2"
+
+mcmcplot1(  ss , greek = T )
+mcmcplot1(  Alpha, greek = T )
+mcmcplot1(  mu , greek = T)
+
+Theta <- matrix( c(Alpha,mu,ss) , ncol = 3 ); colnames(Theta) <- c("Alpha","mu","ss")
+t(apply(Theta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+geweke.diag(mcmc(Theta))
+
+median(mu)
+median(ss)
+median(Alpha)
+```
+```{r,echo = F}
+
+qu <- quantile( as.vector(mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(mu)[[1]], round(density(mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+mup <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(ss) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(ss)[[1]], round(density(ss)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ssp <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(Alpha) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Alpha)[[1]], round(density(Alpha)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+alphap <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="green"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="green", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+multiplot(mup, ssp, alphap, cols=3)
+```
+
+
+
+\ 
+
+\ 
+
+
+Normal Model for the Treatment Group
+
+ \ 
+
+```{r }
+hers1 <- hers[ which(hers[ ,2] == 1), 1:2]
+ 
+B <- 10000
+
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n <- nrow(hers1)
+
+
+a <- b <- cc <- d <- .0001
+
+set.seed(32717)
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (n)/2 + a,	b + (1/ 2 * ss[t-1])  * sum( (hers1$y - mu[t-1] )^2 ) )
+  mu[t] <- rnorm(1, mean(hers1$y) , sqrt( Alpha[t-1]*ss[t-1] / n) )
+  ss[t] <- rinvgamma( 1 , (n/2)+ cc ,  d + (1/(2*Alpha[t])) *		 sum( ( hers1$y - mu[t] )^2 )   )
+} 
+
+# Burn in
+Alpha <- matrix( tail(Alpha,B/2), ncol = 1);colnames(Alpha) <- "alpha"  
+mu <- mu1a <- matrix( tail(mu,B/2), ncol = 1);colnames(mu) <- "mu" 
+ss <- matrix( tail(ss,B/2), ncol = 1);colnames(ss) <- "sigma^2"
+
+mcmcplot1(  ss , greek = T )
+mcmcplot1(  Alpha, greek = T )
+mcmcplot1(  mu , greek = T)
+
+Theta <- matrix( c(Alpha,mu,ss) , ncol = 3 ); colnames(Theta) <- c("Alpha","mu","ss")
+t(apply(Theta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+geweke.diag(mcmc(Theta))
+
+median(mu)
+median(ss)
+median(Alpha)
+```
+```{r,echo = F}
+
+qu <- quantile( as.vector(mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(mu)[[1]], round(density(mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+mup <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(ss) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(ss)[[1]], round(density(ss)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ssp <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(Alpha) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Alpha)[[1]], round(density(Alpha)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+alphap <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="green"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="green", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+multiplot(mup, ssp, alphap, cols=3)
+```
+
+\ 
+
+
+$\sigma^2$ and $\alpha$  are not converging well, so we select some new values for $a$, $b$, $c$, $d$ and reevaluate.
+
+\ 
+
+
+```{r }
+ss <- Alpha <- mu <- rep(NA,B)
+ss[1] <- Alpha[1] <- mu[1] <- 1
+v <- 1
+n <- nrow(hers1)
+
+
+a <- b <- .1
+  cc <- d <- 50
+
+set.seed(32717)
+for (t in 2:B) { 
+  Alpha[t] <- rinvgamma(1, (n)/2 + a,	b + (1/ 2 * ss[t-1])  * sum( (hers1$y - mu[t-1] )^2 ) )
+  mu[t] <- rnorm(1, mean(hers1$y) , sqrt( Alpha[t-1]*ss[t-1] / n) )
+  ss[t] <- rinvgamma( 1 , (n/2)+ cc ,  d + (1/(2*Alpha[t])) *		 sum( ( hers1$y - mu[t] )^2 )   )
+} 
+
+# Burn in
+Alpha <- matrix( tail(Alpha,B/2), ncol = 1);colnames(Alpha) <- "alpha"  
+mu <- mu1b <- matrix( tail(mu,B/2), ncol = 1);colnames(mu) <- "mu" 
+ss <- matrix( tail(ss,B/2), ncol = 1);colnames(ss) <- "sigma^2"
+
+mcmcplot1(  ss , greek = T )
+mcmcplot1(  Alpha, greek = T )
+mcmcplot1(  mu , greek = T)
+
+Theta <- matrix( c(Alpha,mu,ss) , ncol = 3 ); colnames(Theta) <- c("Alpha","mu","ss")
+t(apply(Theta, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+geweke.diag(mcmc(Theta))
+
+median(mu)
+median(ss)
+median(Alpha)
+```
+```{r,echo = F}
+
+qu <- quantile( as.vector(mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(mu)[[1]], round(density(mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+mup <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="red"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="red", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(ss) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(ss)[[1]], round(density(ss)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ssp <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="blue"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="blue", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+qu <- quantile( as.vector(Alpha) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Alpha)[[1]], round(density(Alpha)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+alphap <- ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="green"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="green", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+
+multiplot(mup, ssp, alphap, cols=3)
+```
+
+Difference in means
+
+\ 
+
+```{r}
+quantile(mu0a  - mu1a, probs = c(0.5, 0.025, 0.975))
+
+quantile(mu0b  - mu1b, probs = c(0.5, 0.025, 0.975))
+```
+
+\ 
+
+Zero is not in either credible interval so we conclude they come from different distributions.
+
+\newpage
+
+
+
+\begin{align*}
+\mathcal{L}(y|\mu,\sigma^2  ) & \propto \prod_{i=1}^n \ 
+    \cfrac{ \Gamma\left( \cfrac{n+2}{2} \right) }{   \  \Gamma\left( \cfrac{n+1}{2} \right)  \sqrt{(n-1)\sigma^2 } \ } \ \left[ 1 + \cfrac{(y_i - \mu)^2}{ \ (n-1) \sigma^2 \ }\right]^{-\frac{n}{2}} \\[.5 em]
+p(\mu,\sigma^2,y) & \propto \exp\left[  -\cfrac{n}{2} \  \sum_{i=1}^n \ \log \left(1 + \cfrac{(y_i - \mu)^2}{ 
+        \ (n-1) \sigma^2} \ \right) \right] \\[.5 em] 
+\end{align*}
+
+
+\ 
+
+```{r}
+fy <- function( y , mu ){
+  n <- length(y)
+  s <- sd(y)
+  return( sapply( mu , function(MU) exp( (-n/2) *
+    sum( log( 1 + (y-MU)^2/((n-1)*(s^2)) )) )))}
+```
+
+
+
+
+```{r }
+fy2 <- function( x , y ){ fy(hers0$y, x) / dcauchy(x, median(hers0$y) ) }
+optimize( fy2 , lower = -40, upper = 10, maximum=T )
+M <- optimize( fy2 , lower = -40, upper = 10, maximum=T )$objective
+
+curve( M * ( dcauchy(x, median(hers0$y) ) ) ,	  col = "mediumvioletred",lwd = 1.25 , from = -20, to = 0  )
+curve( fy(hers0$y, x) , from = -20, to = 0 , add=T,		col = "olivedrab4" ,lwd = 1.25)
+
+Mu	<- rep(NA, 10000)
+t <- 1
+count	<- 1
+
+curve( M * ( dcauchy(x, median(hers0$y) ) ) ,	  col = "mediumvioletred",lwd = 1.25 , from = -20, to = 0  )
+curve( fy(hers0$y, x) , from = -20, to = 0 , add=T,		col = "olivedrab4" ,lwd = 1.25)
+
+set.seed(50814)
+while(t < 10001){
+ 
+	tb <-  rcauchy(1, median(hers0$y) )   
+	U <- runif(1)
+ 	r  <- fy(hers0$y,tb) / (M*dcauchy(tb, median(hers0$y) ))
+
+	if(U < r){
+		Mu[t] <- tb
+		t <- t + 1	
+	points( tb , M*U*dcauchy(tb, median(hers0$y) ), col = "red" , pch = 16) } else {
+	points( (tb) , M*U*dcauchy(tb, median(hers0$y) ), col = "blue" , pch = 4) }
+	count	<- count + 1 }
+
+tail(Mu)
+median(Mu)
+Mu <- Mu0 <- matrix( Mu, ncol = 1);colnames(Mu) <- "mu" 
+geweke.diag(mcmc(Mu))
+t(apply(Mu, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+mcmcplot1(  Mu , greek = T )
+```
+
+```{r, echo = F}
+qu <- quantile( as.vector(Mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Mu)[[1]], round(density(Mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="seagreen2"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="seagreen2", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+```
+
+
+
+```{r }
+fy2 <- function( x , y ){ fy(hers1$y, x) / dcauchy(x, median(hers1$y) ) }
+optimize( fy2 , lower = -40, upper = 10, maximum=T )
+M <- optimize( fy2 , lower = -40, upper = 10, maximum=T )$objective
+curve( fy(hers1$y, x) , from = -20, to = 0 , ylim = c(0,2.75e-280), col = "mistyrose3" ,lwd = 1.25)
+curve( M*( dcauchy(x, median(hers1$y) ) ) ,add = T , col = "slateblue1",lwd = 1.25)
+
+Mu	<- rep(NA, 10000)
+t <- 1
+count	<- 1
+
+curve(  fy(hers1$y, x) , from = -20, to = 0 , ylim = c(0,2.75e-280))
+curve( M*( dcauchy(x, median(hers1$y) ) )  ,add = T)
+
+set.seed(50814)
+while(t < 10001){
+ 
+	tb <-  rcauchy(1, median(hers1$y) )   
+	U <- runif(1)
+ 	r  <- fy(hers1$y,tb) / (M*dcauchy(tb, median(hers1$y) ))
+
+	if(U < r){
+		Mu[t] <- tb
+		t <- t + 1	
+	points( tb , M*U*dcauchy(tb, median(hers1$y) ), col = "red" , pch = 16) } else {
+	points( (tb) , M*U*dcauchy(tb, median(hers1$y) ), col = "blue" , pch = 4) }
+	count	<- count + 1 }
+
+median(Mu)
+Mu <- Mu1 <- matrix( Mu, ncol = 1);colnames(Mu) <- "mu" 
+geweke.diag(mcmc(Mu))
+t(apply(Mu, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+
+mcmcplot1(  Mu , greek = T )
+```
+
+```{r, echo = F}
+qu <- quantile( as.vector(Mu) , probs = c(0.5, 0.025, 0.975))[2:3]
+dc <- data.frame( density(Mu)[[1]], round(density(Mu)[[2]],6) )
+colnames(dc) = c("x" , "y" ); dc$area <- dc[,1] > qu[1] & dc[,1] < qu[2]
+
+ggplot( data = dc , aes(x=x , y=y)    ) + geom_line( col="purple"  ) +
+	geom_ribbon(data = dc[which(dc$area == T),], aes(x, ymin=0 , ymax=y ), fill="purple", alpha = .15) +
+	theme(legend.position="none", axis.title.x=element_blank(), axis.title.y=element_blank(),
+	     plot.title = element_text(hjust = 0.5)   )+ theme_minimal()
+```
+
+
+\ 
+
+For both $t$-likelihood models based on the visual inspection the parameter appears to converge well. It is backed up by the Geweke diagnostic; with both scores with an absolute value less than two.
+
+\ 
+
+```{r}
+quantile(Mu0  - Mu1, probs = c(0.5, 0.025, 0.975))
+```
+
+
+\ 
+
+Zero is not in either credible interval so we conclude they come from different distributions.
+
+\ 
+
+The credible intervals for each respective group and for each model, normal or $t$, appear to be incredibly similar.
