@@ -1,0 +1,141 @@
+---
+title: ''
+output: pdf_document
+header-includes:
+   - \usepackage{cancel}
+---
+
+
+\ 
+
+\  
+
+Assume $y_i \sim L(\mu, \sigma)$. We can represent this model as a mixture of a normal likelihood and inverse-gamma priors. Thus if we let $y_i \sim N\left( \mu, \frac{4\sigma^2}{\alpha_i} \right)$ where $\sigma^2 \sim IG(a,b)$ and $\alpha_i \stackrel{iid}{\sim} IG(1, 1/2)$ for fixed hyper-parameters $a$ and $b$. Using this specification and a flat prior on $\mu$, $\pi(\mu) \propto 1$, state the full posterior and determine the conditional posterior distributions for all model parameters, $\mu$, $\sigma^2$, and $\alpha_1, \ldots, \alpha_n$. Write out the steps of a Gibbs Sampler you could use to draw posterior samples. (Hint: the conditional posterior for $\alpha_i$, with some manipulation, should be recognizable as an inverse-Gaussian.)
+		
+\ 
+		
+\begin{align*}
+    \mathcal{L}(y_i|\mu, \sigma^2,\alpha_i) & \propto \prod_{i = 1}^n \left( \cfrac{4\sigma^2}{\alpha_i}\right)^{-\frac{1}{2}}  \exp\left[ -\cfrac{1}{  2 \ \frac{4\sigma^2}{\alpha_i}   } \  (y_i-\mu)^2 \right] \\[.5 em]
+    & \propto \Big( \sigma^2 \Big)^{-\frac{n}{2}} \left[ \  \prod_{i=1}^n \sqrt{\alpha_i} \ \right] \ 
+        \exp\left[  - \cfrac{1}{8\sigma^2} \sum_{i=1}^n  \alpha_i (y_i-\mu)^2 \right] \\[.5 em]
+\end{align*}
+
+
+\begin{align*}
+    P(\mu,\sigma^2,\alpha_i|y_i) &\propto  \Big( \sigma^2 \Big)^{-\frac{n}{2}} \left[ \  \prod_{i=1}^n \sqrt{\alpha_i} \ \right] \         \exp\left[  - \cfrac{1}{8\sigma^2} \sum_{i=1}^n  \alpha_i (y_i-\mu)^2 \right] 
+    \Big( \sigma^2 \Big)^{-(a+1)} \exp\left( -\cfrac{b}{\sigma^2}\right) \left[ \  \prod_{i=1}^n \alpha_i^{-(1+1)} \exp\left( - \cfrac{1}{2\alpha_i } \right)  \ \right] \\[.75 em]
+     &\propto \Big( \sigma^2 \Big)^{-\left(\frac{n}{2} + a + 1 \right)} \left[ \  \prod_{i=1}^n  \alpha_i^{-\frac{3}{2}}  \ \right] \exp\left[  - \cfrac{1}{8\sigma^2} \sum_{i=1}^n  \alpha_i (y_i-\mu)^2  -\cfrac{b}{\sigma^2} - 
+        \sum_{i=1}^n \cfrac{1}{2\alpha_i }  \right] \\
+\end{align*} 
+
+
+\begin{align*}
+    p(\alpha_k | \mu, \sigma^2, \alpha_{i\neq k},y)& \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{8\sigma^2} \ \alpha_k (y_1-\mu)^2 - \cfrac{1}{2\alpha_k} \right] \\[.5em]
+    & = \alpha_k^{ -\frac{3}{2}} \ \exp\left[ \ - \cfrac{1}{2} \left(  \cfrac{ \alpha_k^2 (y_1-\mu)^2 + 4\sigma^2 \ }{4\alpha_k\sigma^2}  \right) \right] \\[.5em]
+    &= \alpha_k^{ -\frac{3}{2}} \ \exp\left[ \ - \cfrac{1}{2} \left(  \cfrac{ \alpha_k^2 (y_1-\mu)^2 - 4\sigma  (y_1-\mu) \alpha_k + 4\sigma^2 + 4 \sigma  (y_1-\mu) \alpha_k  \ }{4\alpha_k\sigma^2}  \right) \right] \\[.5em]
+    &=  \alpha_k^{ -\frac{3}{2}} \ \exp\left[ \ - \cfrac{1}{2} \left(  \cfrac{ \ (y_1-\mu)^2 \left(\alpha_k -  \frac{ \ 4\sigma (y_1 - \mu )^2   \ }{2 (y_1 - \mu )^2 } \right)^2    \ }{4\alpha_k\sigma^2} + 
+        \cfrac{ \ 4\sigma^2 - \frac{\ \big(4\sigma(y_1-\mu)\big)^2 \ }{4 (y_1-\mu)^2 } +  4\sigma  (y_1-\mu )  \alpha_k \ }{4\alpha_k\sigma^2}\right) \right] \\[.5em]
+    &=  \alpha_k^{ -\frac{3}{2}} \ \exp\left[ \ - \cfrac{1}{2} \left(  \cfrac{ \ (y_1-\mu)^2 \left(\alpha_k - 2\sigma   
+     \right)^2    \ }{4\alpha_k\sigma^2} + 
+        \cfrac{ \ \cancel{ 4\sigma^2 - 4\sigma^2 } +   4\sigma  (y_1-\mu) \cancel{\alpha_k} \ }{4\sigma^2 \cancel{\alpha_k}}\right) \right] \\[.5em]  
+    &\propto     \alpha_k^{ -\frac{3}{2}} \ \exp\left[ \ -   \cfrac{ \ (y_1-\mu)^2 \left(\alpha_k - 2\sigma   
+     \right)^2    \ }{2\alpha_k (2\sigma)^2}    \right] \\[.5em]  
+\end{align*}
+ 
+ \newpage
+ 
+  Suppose we wish to build a more general Bayesian model for a binomial sample. Let $X \sim Binom(N, p)$. Further, let $p \sim Beta(\alpha, \beta)$ where $\alpha \sim Gamma(a_1, b_1)$ and $\beta \sim Gamma(a_2, b_2)$. Find the likelihood, posterior, and the full conditionals. If a full conditional is recognizable, state its name. If they are not recognizable, suggest a potential proposal distribution.
+	
+ \begin{align*}
+     \mathcal{L}  \left( X | N,p,  \right) & \propto p^x (1-p)^{N-x} \\
+ \end{align*}
+ 
+ 
+ \begin{align*}
+     p(p,\alpha,\beta,N,X) & \propto p^x (1-p)^{N-x} \ 
+        \cfrac{ \Gamma(\alpha + \beta )}{  \Gamma(\alpha) \Gamma(\beta)    } \ 
+     p^{\alpha-1} (1-p)^{\beta-1} \alpha^{a_1 - 1} \exp(\alpha b_1) \beta^{a2-1} \exp(\beta b_2) \\ 
+ \end{align*}
+ 
+ 
+ \begin{align*}
+   p(p|\alpha,\beta,N,X) & \propto  p^x (1-p)^{N-x}  p^{\alpha-1} (1-p)^{\beta-1} \\[.5 em]
+   &  = p^{x+\alpha -1} (1-p)^{N+\beta-x-1} \\[.5 em]
+   p & \sim Beta(x+\alpha, N+\beta-x)
+ \end{align*}
+ 
+ \begin{align*}
+     p(\alpha|p,\beta,N,X) & \propto \cfrac{\Gamma(\alpha + \beta)}{\Gamma(\alpha )} \  p^{\alpha-1} \alpha^{a_1-1} \exp(\alpha b_1)
+ \end{align*}
+ \hfil PROPOSAL DENS ???
+ 
+ 
+ \begin{align*}
+     p(\beta|p,\alpha,N,X) & \propto \cfrac{\Gamma(\alpha + \beta)}{\Gamma(\beta )} \  (1-p)^{\beta-1} \beta^{a_2-1} \exp(\beta b_2)
+ \end{align*}
+  \hfil PROPOSAL DENS ???
+
+  \newpage
+
+ 
+The Kumaraswamy distribution is a distribution that, like the Beta, can be used to model probabilities. It has as its pdf the following:
+		\begin{align*}
+			p(\theta) = ab\theta^{a-1}(1 - \theta^a)^{b-1},\ \theta \in (0, 1).
+		\end{align*}
+
+We wish to draw samples from $p(\theta)$ when $a = 2$ and $b = 2$ using a Metropolis-Hastings algorithm. Compare the following proposal densities to each other based on acceptance rate, ACF, and the resulting sampled density: $Beta(1,1)$, $Beta(2,1)$, $Beta(2,2)$, and $Beta(3, 2)$. Select the proposal density you think is best out of these four and provide the criteria by which you made your selection. Set the seed to 1218 and take $B = 20000$ samples. Discard the burn-in before examining ACF and the sampled density. Without thinning, do you notice any differences between proposals?
+	
+		\ 
+ 
+
+```{r, echo = F}
+require(MCMCpack)
+```
+ 
+```{r}
+Kumaraswamy <- function(x) { 2*2*x^(2-1)*(1-x^2)^(2-1) }
+
+B <- 10000
+xs <- ar <- rep(0, B)
+ar <- vector("numeric", B)
+
+Xs <- Ar <- list()
+
+a <- c(1,2,2,3)
+b <- c(1,1,2,2)
+
+j = 2
+
+for( j in 1:length(a)) {
+	x  <- .5
+	xs <- ar <- rep(0, B)
+	set.seed(1218)
+	for( i in 2:B){
+		xstar	<- rbeta(1, a[j], b[j])
+		rho <- (  Kumaraswamy(xstar) / Kumaraswamy(x)  ) * 
+			( dbeta( x , a[j], b[j] )  /  dbeta( xstar, a[j], b[j] ) )
+		rho <- min(1, rho )
+	
+		if ( runif(1) < rho ){ x <- xstar; ar[i] <- 1}
+		xs[i] <- x }
+	Xs[[j]] <- xs[-(1:(B/2))] 
+	Ar[[j]] <- ar
+	}
+
+j = 4
+ 
+
+par(mfrow=c(2,2) , mar=c(2.1,2.1,2.1,2.1) )
+for(k in 1:4){ plot(cumsum(Xs[[k]] )/(1:(B/2)), type = 'l', 
+	ylab = 'Running Mean', xlab = 'B', lwd = 2,
+	main = paste0("alpha = ",a[k], ", beta = ",b[k]) ) }
+ 
+lapply( Xs, geweke.diag ) 
+
+
+```
+ 
+ \ 
+ 
+ DISCUSSION...
+ 
