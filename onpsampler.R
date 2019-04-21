@@ -90,6 +90,13 @@ betas[i,] <- rmvnorm(1,  xtxi %*% (t(X)%*%Z[i,]) , xtxi )
 }
 ); beep("coin")
 
+betas <- tail(betas, B/2)
+gammas<- tail(gammas, B/2)
+Z <- tail(Z, B/2)
 
+plot(density(gammas[,2])); median(gammas[,2])
+plot(density(gammas[,3])); median(gammas[,3])
+plot(density(gammas[,4])); median(gammas[,4])
 
+fit
 
