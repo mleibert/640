@@ -127,7 +127,7 @@ Z[i,] <- gam$z
 #sample betas
 betas[i,] <- rmvnorm(1,  xtxi %*% (t(X)%*%Z[i,]) , xtxi )
 }
-); beep("coin")
+); beep("mario")
 
 
 
