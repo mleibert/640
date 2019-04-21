@@ -39,6 +39,7 @@ require(mvtnorm)
 require(MASS)
 library(foreign) 
 require(beepr)
+library(msm)
 
 setwd("G:\\math\\640")
 onp <- read.csv("onp_train.csv",header = T)
@@ -46,28 +47,49 @@ onp <- read.csv("onp_train.csv",header = T)
 
  
 onp <- onp[,c(5:44,47,ncol(onp) )]
-fit <- polr( as.factor(share_cat) ~ . , data = onp   )
+fit <- polr( as.factor(share_cat) ~ . , data = onp  , method = "probit" )
 X <- model.matrix(fit)
 X <- X[,-1]
 Y <- as.factor( onp[,ncol(onp)] )
 B <- 1000 
 
+# MLE Betas
 betas <- matrix(NA, B , length(coef(fit)))
 betas[1,] <- coef(fit)
 
-Z <- matrix(NA, B , nrow(X))
-xtb <- apply( X , 1 , function(Q) t(Q ) %*%  betas[1,] )
-for( i in 1:nrow(X)){  Z[1,i] <- rnorm( 1 , xtb[i], 1 ) }
-
-
+# MLE Gammas
 gammas <- matrix( NA, B, 4 ); gammas[,1] <- 0
-gam <- data.frame( z = Z[1,], Y )
-for( j in 2:4  ) { gammas[1,j] <- mean( gam[ which(gam[,2] == j) , 1] ) }
+gammas[1, 2:4 ] <- fit$zeta[-1]; gammas[1,  ]
+  
+# Z's
+Z <- matrix(NA, B , nrow(X))
 
+gam <- data.frame( z = Z[1,], Y )
+gam$xtb <- apply( X , 1 , function(Q) t(Q ) %*%  betas[1,] )  #cant vectorize...
+head(gam)
+
+i = 1 
+
+## Horribly slow
+
+for(k in 1:nrow(gam)){
+  
+  if( gam[k,]$Y == 1 ){ arg1 = -Inf } else { arg1 = 
+    gammas[i,  as.numeric(gam[k,]$Y) -1 ] }
+  
+  if( gam[k,]$Y == 5 ){ arg2 = Inf } else { arg2 = 
+    gammas[i  ,   as.numeric(gam[k,]$Y) ] }
+  
+  gam[k,1] <- rtnorm( 1  , gam[k,3] , 1 , 
+            lower =  arg1 , upper = arg2  )
+}
+Z[i,] <- gam$z
+
+
+#gammas <- cbind( rep(10e-15, nrow(gammas) )  , gammas )
 xtxi <- solve(t(X)%*%X, tol = 1e-18)
  
-
-####
+ ####
 
 system.time(
 for( i in 2:B) {
@@ -82,13 +104,35 @@ for( j in 2:4 ){
 }
  
 #sample Z's
-xtb <- apply( X , 1 , function(Q) t(Q ) %*%   betas[i-1,] )
-for( k in 1:nrow(X)){  Z[i,k] <- rnorm( 1 , xtb[k], 1 ) }
+gam <- data.frame( z = Z[1,], Y )
+gam$xtb <- apply( X , 1 , function(Q) t(Q ) %*%  betas[1,] )  #cant vectorize...
+head(gam)
+
+## Horribly slow
+
+for(k in 1:nrow(gam)){
+  
+  if( gam[k,]$Y == 1 ){ arg1 = -Inf } else { arg1 = 
+    gammas[i,  as.numeric(gam[k,]$Y) -1 ] }
+  
+  if( gam[k,]$Y == 5 ){ arg2 = Inf } else { arg2 = 
+    gammas[i  ,   as.numeric(gam[k,]$Y) ] }
+  
+  gam[k,1] <- rtnorm( 1  , gam[k,3] , 1 , 
+                      lower =  arg1 , upper = arg2  )
+}
+Z[i,] <- gam$z
+
 
 #sample betas
 betas[i,] <- rmvnorm(1,  xtxi %*% (t(X)%*%Z[i,]) , xtxi )
 }
 ); beep("coin")
+
+
+
+
+
 
 betas <- tail(betas, B/2)
 gammas<- tail(gammas, B/2)
