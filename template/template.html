@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Making News Go Viral</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Cin Cin Fang &amp; Michael Leibert" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="test.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Making News Go Viral
+## Math 640 Class Project Presentation
+### Cin Cin Fang &amp; Michael Leibert
+### (updated: 2019-05-08)
+
+---
+
+
+
+
+#Data
+
+
+Online News Popularity Data Set 
+
+ + This dataset contains rougly 45 attributes about articles published by Mashable in a period of two years. The goal is to predict the number of shares in social networks (popularity).
+ 
+ + Variables range from category (business, entertainment, lifestyle, etc), measures of the article's subjectivity and polarity, and the average length words.
+ 
+ + We end up removing some variables that display multicollinearity, and we also scale the continuous variables.
+
+ + Dataset has 39,644 samples. We will use a 30,000 train / 9,644 test split.
+---
+
+#Data
+
+
+A sample of a few rows and columns:
+
+
+```
+##                                                       url num_imgs
+##  http://mashable.com/2013/07/03/lion-forge-80s-tv-comics/        6
+##           http://mashable.com/2013/07/03/low-cost-iphone/       15
+##          http://mashable.com/2013/07/03/mediashift-wi-fi/        1
+##                                                                   
+##  num_videos global_subjectivity max_negative_polarity topic shares
+##           0         0.421512501                -0.025  tech    792
+##           1         0.503344852                 -0.05 other 843300
+##           0         0.301536797                  -0.1 world   9500
+## 
+```
+
+
+
+---
+# Goals
+
+
+&lt;br&gt;
+
+&lt;br&gt;
+
+&lt;br&gt;
+
+
+ + The goal is to find the attributes that can predict how sharable an article is.
+
+
+--
+
+
+ + We will utilize the Bayesian ordinal probit model.
+
+
+--
+
+ + We will test the robustness of our estimates for `\(\beta\)` with three different priors on `\(\beta\)`: a flat prior, a Laplacian prior, and a Normal prior.
+
+--
+
+ + We will out-of-sample testing to check our results.
+
+
+---
+# Methods
+
+ + Rather than attempt to predict the given "shares" directly, we instead translate "shares" of the articles `\(i = 1,...,n\)` into quintiles to form ordinal categories.
+
+--
+
+ + Again, this lends itself to ordinal probit regression, which can be more easily modeled in a Bayesian context through latent variables.
+
+
+
+--
+
+ + For this formulation, the latent variable `\(z_i\)` of article `\(i\)`, `\(z \overset{iid}{\sim} N( x'_i \beta ,1)\)`
+
+ + Where `\(x_i\)` is the vector of predictive variables and `\(\beta\)` is the vector of coeffcients we are ultimately interested in.
+ 
+--
+
+The observed response variable `\(y_i\)`, which quantile of shares does it attract, is:
+
+
+`$$y_i = \begin{cases} \hfil 1 &amp;  \text{if  } \  \gamma_0 &lt; z_i \leq \gamma_1 \\[.3 em] \hfil 2  &amp; \text{if  } \ \gamma_1 &lt; z_i \leq \gamma_2 \\[.3 em] &amp; \hspace{11 mm} \vdots \\[.4 em] \hfil 5  &amp; \text{if  } \ \gamma_4 &lt; z_i \leq \gamma_5 \\ \end{cases}$$`
+
+
+Where `\(\gamma_0\)` is `\(-\infty\)` and `\(\gamma_5\)` is `\(\infty\)`
+
+---
+
+# Flat Prior
+
+&lt;br&gt;
+
+Likelihood
+
+
+
+`$$\begin{align*} \mathcal{L}(y|z,\gamma,\beta,X) &amp; \propto \prod_{i=1}^{n} \left[ \ \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z_i - x'_i \beta \right)^2 \right] \\[.5em] &amp; \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \\[1em] \end{align*}$$`
+
+
+&lt;br&gt;
+
+--
+
+Under the flat prior `\(\pi(\beta)\propto 1\)`, the posterior is unchanged.  
+
+&lt;br&gt;
+
+`$$\begin{align*} P(z,\gamma,\beta|y,X) &amp;  \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \end{align*}$$` 
+
+
+---
+
+# Flat Prior
+
+The conditional for `\(\beta\)` is:
+
+`$$\begin{align*} p(\beta|z,\gamma,X,y) &amp; \propto \exp\left[-\cfrac{1}{2} \left( \beta'X'X\beta - 2\beta'X'X(X'X)^{-1}X'z \right) \right]\end{align*}$$`
+
+--
+
+Which is the kernel of a normal distribution, so `$$\begin{align*} \beta|z,\gamma,X,y \sim N\Big( (X'X)^{-1}X'z , (X'X)^{-1}  \Big)\end{align*}$$`
+
+&lt;br&gt;
+--
+
+The conditional for `\(\gamma_j\)`, where `\(j=2,3,4\)`:
+
+`$$\begin{align*} p(\gamma_j|z,\beta,X,y) &amp; \propto \prod_{i=1}^n I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}} + I_{ \{ \gamma_{j} &lt; z_i \leq \gamma_{j+1} \} }  \ I_{\{y_i = j + 1 \}}\end{align*}$$`
+Which is a uniform distribution
+
+`$$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1},\gamma_{j+1}\}\}\Big)$$`
+
+
+---
+
+#Flat Prior
+
+
+
+To find the conditionals for `\(z_i\)`, we must consider the separate cases of `\(y_i\)`
+
+--
+
+If `\(y_i = j\)`, the conditional for `\(z_i\)` is:
+
+
+`$$\begin{align*} p( z |\gamma,\beta,X,y) &amp; \propto  \exp\left[-\cfrac{1}{2}\left(z_i - x'_i\beta \right)^2\right]\end{align*}  I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_{j} \} }$$`
+
+
+Which is a truncated normal with mean `\(x'_i\beta\)`, variance 1, and truncated to be between `\(\gamma_{j-1}\)` and `\(\gamma_j\)`
+j .
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

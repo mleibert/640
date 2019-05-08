@@ -1,0 +1,186 @@
+---
+title: "Making News Go Viral"
+subtitle: "Math 640 Class Project Presentation"
+author: "Cin Cin Fang & Michael Leibert"
+date: "(updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: ["metropolis", "metropolis-fonts", "test.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      beforeInit: "macros.js"
+header-includes:
+   - \usepackage[english]{babel}
+   - \usepackage[autostyle, english = american]{csquotes}
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+# find.image searches subdirectories for partial match of argument. Useful when some images are dynamically generated
+find.image=function(name){grep(name,list.files(recursive = TRUE),value=TRUE)}
+
+# Example of how to use find.image to display an image
+#![:scaleimgpct 100%](`r find.image("mnist_digits")`)
+
+```
+
+#Data
+
+
+Online News Popularity Data Set 
+
+ + This dataset contains rougly 45 attributes about articles published by Mashable in a period of two years. The goal is to predict the number of shares in social networks (popularity).
+ 
+ + Variables range from category (business, entertainment, lifestyle, etc), measures of the article's subjectivity and polarity, and the average length words.
+ 
+ + We end up removing some variables that display multicollinearity, and we also scale the continuous variables.
+
+ + Dataset has 39,644 samples. We will use a 30,000 train / 9,644 test split.
+---
+
+#Data
+
+
+A sample of a few rows and columns:
+
+```{r, echo = F}
+onp <- read.csv("onpex.csv",stringsAsFactors = F)
+onp <- rbind( onp , rep(" ", 7) )
+print(onp[ ,c(3,12,13,29, 40 , 47 , 45)], row.names = F)
+```
+
+
+
+---
+# Goals
+
+
+<br>
+
+<br>
+
+<br>
+
+
+ + The goal is to find the attributes that can predict how sharable an article is.
+
+
+--
+
+
+ + We will utilize the Bayesian ordinal probit model.
+
+
+--
+
+ + We will test the robustness of our estimates for $\beta$ with three different priors on $\beta$: a flat prior, a Laplacian prior, and a Normal prior.
+
+--
+
+ + We will out-of-sample testing to check our results.
+
+
+---
+# Methods
+
+ + Rather than attempt to predict the given "shares" directly, we instead translate "shares" of the articles $i = 1,...,n$ into quintiles to form ordinal categories.
+
+--
+
+ + Again, this lends itself to ordinal probit regression, which can be more easily modeled in a Bayesian context through latent variables.
+
+
+
+--
+
+ + For this formulation, the latent variable $z_i$ of article $i$, $z \overset{iid}{\sim} N( x'_i \beta ,1)$
+
+ + Where $x_i$ is the vector of predictive variables and $\beta$ is the vector of coeffcients we are ultimately interested in.
+ 
+--
+
+The observed response variable $y_i$, which quantile of shares does it attract, is:
+
+
+$$y_i = \begin{cases} \hfil 1 &  \text{if  } \  \gamma_0 < z_i \leq \gamma_1 \\[.3 em] \hfil 2  & \text{if  } \ \gamma_1 < z_i \leq \gamma_2 \\[.3 em] & \hspace{11 mm} \vdots \\[.4 em] \hfil 5  & \text{if  } \ \gamma_4 < z_i \leq \gamma_5 \\ \end{cases}$$
+
+
+Where $\gamma_0$ is $-\infty$ and $\gamma_5$ is $\infty$
+
+---
+
+# Flat Prior
+
+<br>
+
+Likelihood
+
+
+
+$$\begin{align*} \mathcal{L}(y|z,\gamma,\beta,X) & \propto \prod_{i=1}^{n} \left[ \ \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z_i - x'_i \beta \right)^2 \right] \\[.5em] & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \\[1em] \end{align*}$$
+
+
+<br>
+
+--
+
+Under the flat prior $\pi(\beta)\propto 1$, the posterior is unchanged.  
+
+<br>
+
+$$\begin{align*} P(z,\gamma,\beta|y,X) &  \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \end{align*}$$ 
+
+
+---
+
+# Flat Prior
+
+The conditional for $\beta$ is:
+
+$$\begin{align*} p(\beta|z,\gamma,X,y) & \propto \exp\left[-\cfrac{1}{2} \left( \beta'X'X\beta - 2\beta'X'X(X'X)^{-1}X'z \right) \right]\end{align*}$$
+
+--
+
+Which is the kernel of a normal distribution, so $$\begin{align*} \beta|z,\gamma,X,y \sim N\Big( (X'X)^{-1}X'z , (X'X)^{-1}  \Big)\end{align*}$$
+
+<br>
+--
+
+The conditional for $\gamma_j$, where $j=2,3,4$:
+
+$$\begin{align*} p(\gamma_j|z,\beta,X,y) & \propto \prod_{i=1}^n I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}} + I_{ \{ \gamma_{j} < z_i \leq \gamma_{j+1} \} }  \ I_{\{y_i = j + 1 \}}\end{align*}$$
+Which is a uniform distribution
+
+$$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1},\gamma_{j+1}\}\}\Big)$$
+
+
+---
+
+#Flat Prior
+
+
+
+To find the conditionals for $z_i$, we must consider the separate cases of $y_i$
+
+--
+
+If $y_i = j$, the conditional for $z_i$ is:
+
+
+$$\begin{align*} p( z |\gamma,\beta,X,y) & \propto  \exp\left[-\cfrac{1}{2}\left(z_i - x'_i\beta \right)^2\right]\end{align*}  I_{ \{ \gamma_{j-1} < z_i \leq \gamma_{j} \} }$$
+
+
+Which is a truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$
+j .
+
+
+
+
+
+
+
+
+

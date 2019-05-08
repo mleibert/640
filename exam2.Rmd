@@ -1,0 +1,998 @@
+---
+title: ''
+output: pdf_document
+---
+
+Michael Leibert
+
+Math 640
+
+Exam 2, Computing
+
+\ 
+
+1. The REIGN dataset calculates the monthly risk of a coup occurring for each country
+in the world. We are interested in modeling the log transformed risk of coup from the
+month of December in the year 1980. The data is roughly symmetric and unimodal,
+however it is unclear that it is normal. One model we can use to help determine if it is
+normal is the generalized normal which has as its pdf the following:
+
+\begin{align*}
+    p(z_i) & = \cfrac{\beta}{ \ 2 \Gamma\left(\frac{1}{\beta}\right) \  } \ \exp\left(-|z_i|^\beta\right)
+\end{align*}
+
+If $\beta \approx 2$, the model suggests a Gaussian likelihood and if $\beta \approx 1$, it suggests the
+Laplacian. Thus we can use the generalized normal model as one a way to determine
+which of these two likelihoods is a better fit for the data.
+
+Derive the likelihood and posterior assuming a flat prior for $\beta$, $\pi(\beta) \propto 1$.
+
+
+\begin{align*}
+    \mathcal{L}(z_i|\beta ) \propto & \prod_{i=1}^n \ 
+        \cfrac{\beta}{ \ 2 \Gamma\left(\frac{1}{\beta}\right) \  } \ \exp\left(-|z_i|^\beta \right) \\[.5em]
+    & \propto \left[ \cfrac{\beta}{ \ \Gamma\left(\frac{1}{\beta}\right) \  } \right]^n
+        \exp\left( - \sum_{i=1}^n |z_i|^\beta  \right)
+\end{align*}
+
+\begin{align*}
+    p(\beta|z_i) & \propto \left[ \cfrac{\beta}{ \ \Gamma\left(\frac{1}{\beta}\right) \  } \right]^n
+        \exp\left( - \sum_{i=1}^n |z_i|^\beta  \right)
+\end{align*}
+
+Then implement a sampler of your choosing to generate posterior samples for $\beta$ using the data
+making sure to standardize it first.
+
+\ 
+
+```{r}
+rm(list=ls());invisible(gc())
+setwd("G:\\math\\640")
+
+reign <- read.table("coup1280.txt", stringsAsFactors = F , header =T)
+reign$z <- scale(reign[,2])
+
+POST <- function( B , w ){  (B/gamma(1/B))^(length(w)) * exp(- sum(abs( w )^B) )  }
+Post <- function(B){ POST(B,reign$z)}
+post <- function(B){ return(sapply(B, Post )) }
+
+a =.3; b =  .15
+
+curve(post  , from = 0.1, to = 3  , col = "mediumvioletred",lwd = 2 )
+curve(   dlnorm(x, .3, .15 ), from = 0, to = 4 , add = T)
+
+# Multiply Posterior by a constant to get a better look
+POST <- function( B , w ){ 10e52* (B/gamma(1/B))^(length(w)) * exp(- sum(abs( w )^B) )  }
+Post <- function(B){ POST(B,reign$z)}
+post <- function(B){ return(sapply(B, Post )) }
+curve(post   , from = 0.1, to = 3, ylim = c(0,2), col = "mediumvioletred",lwd = 2  )
+curve(   dlnorm(x, .3, .15 ), from = 0, to = 4 , add = T, col = "olivedrab4" ,lwd = 2)
+legend("topright", legend=c("Posterior", "Log Normal"),
+       col=c("mediumvioletred", "olivedrab4"), lty=1 , lwd = 2, cex=0.8, text.font=4 )
+```
+
+\ 
+
+Generate
+8,000 retained samples (i.e. post-burnin, thinned samples) with your sampler, setting
+the seed to 23.
+
+\ 
+
+
+```{r, cache=T}
+# Remove constant
+POST <- function( B , w ){  (B/gamma(1/B))^(length(w)) * exp(- sum(abs( w )^B) )  }
+Post <- function(B){ POST(B,reign$z)}
+post <- function(B){ return(sapply(B, Post )) }
+
+# Find M
+q <- function(v){post(v) /   dlnorm(v, .3, .15  ) }
+M <- optimize( q , lower=.2, upper = 3, maximum = T )$objective
+
+curve(post, from = .5, to = 2.5 , col = "mediumvioletred",lwd = 2  )
+curve( M* dlnorm(x, a, b ), add = T, col = "olivedrab4" ,lwd = 2)
+legend("topright", legend=c("Posterior", "Log Normal"),
+       col=c("mediumvioletred", "olivedrab4"), lty=1 , lwd = 2, cex=0.8, text.font=4 )
+
+#zoom
+curve(post, from = 1, to = 1.7 , col = "mediumvioletred",lwd = 2 )
+curve( M*dlnorm(x, a, b ), add = T, col = "olivedrab4" ,lwd = 2)
+legend("topright", legend=c("Posterior", "Log Normal"),
+       col=c("mediumvioletred", "olivedrab4"), lty=1 , lwd = 2, cex=0.8, text.font=4 )
+
+curve(post, from = .5, to = 2.5  )
+curve( M* dlnorm(x, a, b ), add = T)
+
+Beta <- rep(NA, 8000)
+i <- 1
+count <- 1
+
+set.seed(23)
+while(i < 8001){
+  tb <- rlnorm(1,a,  b)
+  U <- runif(1)
+  r <- post(tb) / (M*dlnorm(tb,a,  b))
+  if(U < r){
+    Beta[i] <- tb
+    i <- i + 1
+    points( tb , M*U*dlnorm(tb,a,  b), col = "blue" , pch = 16) } else {
+      points( (tb) , M*U*dlnorm(tb,a,  b), col = "red" , pch = 4) }
+  count <- count + 1 }
+8000/count
+
+
+median(Beta)
+
+```
+
+\ 
+
+Based on your samples of $\beta$, determine which of the two likelihoods
+matches the data best (it may not be exact).
+
+\ 
+
+It is clear that $\beta$ is closer to 1 and the Laplacian likelihood would be the preferred choice.
+
+
+\ 
+
+
+Next, return to the original data, i.e. unstandardized data $x_i$, and model it with your
+chosen likelihood. Derive the posterior and full conditionals.
+
+
+\ 
+
+Because the preferred choice is the double exponential, we let $x_i \sim L(\mu,\sigma)$. We can represent this model as a mixture of a normal likelihood and inverse-gamma priors. Thus, let $x_i \sim N\left(\mu, \ \frac{4\sigma^2}{\alpha_i}\right)$, where $\sigma^2 \sim IG(a,b)$, and $\alpha_i \overset{iid}{\sim} IG\left(1,\frac{1}{2} \right)$. Additionally, we will use a flat prior on $\mu$, $\pi(\mu) \propto 1$.
+
+\begin{align*}
+    \mathcal{L}(x_1,...,x_n|\mu, \sigma^2,\alpha_1,...,\alpha_n) & \propto \prod_{i = 1}^n 
+        \left( \cfrac{ \sigma^2}{\alpha_i}\right)^{-\frac{1}{2}}  
+        \exp\left[ -\cfrac{\alpha_i}{  2 \cdot 4\sigma^2 } \  (x_i-\mu)^2 \right] \\[.5 em]
+\end{align*}
+
+\begin{align*}
+    P(\mu, \sigma^2,\alpha_1,...,\alpha_n| x_1,...,x_n )     & \propto
+        \Big( \sigma^2 \Big)^{-\left(  a + 1 \right)} \  \exp\left( -\cfrac{b}{\sigma^2}\right) \ 
+        \prod_{i=1}^n \  \left( \cfrac{\alpha_i }{\sigma^2}\right)^{\frac{1}{2}}  \ 
+        \exp\left[ -\cfrac{\alpha_i}{  2 \cdot 4\sigma^2 } \  (x_i-\mu)^2 \right] \ 
+        \alpha_i^{-2}  \ \exp\left( - \cfrac{1}{2\alpha_i } \right) \\
+\end{align*}
+
+\begin{align*}
+    P(\mu | \text{rest} )  & \propto \prod_{i=1}^n \ 
+        \exp\left[ -\cfrac{\alpha_i}{  2 \cdot 4\sigma^2 } \  (x_i-\mu)^2 \right] \\[.5 em]    
+    &= \exp\left[ - \cfrac{1}{  2 \cdot 4\sigma^2 } \  \sum_{i=1}^n  \alpha_i \  (x_i-\mu)^2 \right] \\[.5 em]   
+    &= \exp\left[ - \cfrac{1}{  2 \cdot 4\sigma^2 } \  \sum_{i=1}^n  \Big( \alpha_i x_i^2 - 2\mu\alpha_ix_i + 
+        \alpha_i \mu^2 \Big) \right] \\[.5 em]   
+    & \propto  \exp\left[ - \cfrac{1}{  2 \cdot 4\sigma^2 } \ \left( \mu^2 \sum_{i=1}^n  \alpha_i  - 2\mu \sum_{i=1}^n
+        \alpha_ix_i   \right) \right] \\[.5 em]    
+    & =  \exp\left[ - \cfrac{ \ \sum\limits_{i=1}^n  \alpha_i \ }{  2 \cdot 4\sigma^2 } \  
+        \left( \mu^2   - 2\mu \  \cfrac{ \ \sum\limits_{i=1}^n \alpha_ix_i \ }{\sum\limits_{i=1}^n  \alpha_i}
+        \right) \right] \\[1 em]
+    \mu |\text{rest}   & \sim N\left( \cfrac{ \ \sum\limits_{i=1}^n \alpha_ix_i \ }{\sum\limits_{i=1}^n  \alpha_i}, \ 
+        \cfrac{  4\sigma^2  }{  \ \sum\limits_{i=1}^n  \alpha_i \ } \right)  \\
+\end{align*}
+
+\begin{align*}
+    P(\sigma^2 | \text{rest} ) & \propto  \Big( \sigma^2 \Big)^{-\left(  a + 1 \right)} \
+         \exp\left( -\cfrac{b}{\sigma^2}\right) \
+         \prod_{i=1}^n \  \left( \cfrac{\alpha_i }{\sigma^2}\right)^{\frac{1}{2}}
+         \exp\left[ -\cfrac{\alpha_i}{  2 \cdot 4\sigma^2 } \  (x_i-\mu)^2 \right] \\[.5 em]
+    & \propto \Big( \sigma^2 \Big)^{-\left( \frac{n}{2} +a + 1 \right)} \   
+        \exp\left[ -\cfrac{1}{ \sigma^2 } \left( b + \cfrac{1}{8}  \  \sum_{i=1}^n  \alpha_i (x_i-\mu)^2 \
+        \right) \right] \\[1 em]
+    \sigma^2 | \text{rest} & \sim IG\left(\cfrac{n}{2}+a, \ b + \cfrac{1}{8} \ 
+        \sum_{i=1}^n \alpha_i (x_i-\mu)^2 \right) \\
+\end{align*}
+
+
+\begin{align*}
+    P(\alpha_k | \text{rest}) & \propto \alpha_k^\frac{1}{2} \ 
+     \exp\left[ -\cfrac{\alpha_k}{  2 \cdot 4\sigma^2 } \  (x_k-\mu)^2 \right] \ \alpha_k^{-2} \ 
+        \exp\left( - \cfrac{1}{2\alpha_k} \right) \\[.5 em]
+    & \propto     \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{2} \left(
+        \cfrac{\alpha_k(x_k-\mu)^2}{4\sigma^2} +  \cfrac{1}{\alpha_k} \right) \right]   \\[.5 em]
+    & \propto    \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{2} \left(
+        \cfrac{ \ \alpha_k^2 (x_k-\mu)^2 + 4\sigma^2 \  }{4\sigma^2\alpha_k}  \right) \right]     \\[.5 em]
+    & \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{2} \left(
+        \cfrac{ \ \alpha_k^2 + \frac{4\sigma^2}{ (x_k-\mu)^2 } \  }{\frac{4\sigma^2}{ (x_k-\mu)^2 } \alpha_k}  \right)
+        \right] \\[.5 em]
+    & \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{2} \left(
+        \cfrac{ \ \alpha_k^2 + \frac{4\sigma^2}{ (x_k-\mu)^2 } \  }{\frac{4\sigma^2}{ (x_k-\mu)^2 } \alpha_k}  \right)
+        \right] \\[.5 em]  
+    & \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -\cfrac{1}{2} \left( \cfrac{
+         \ \alpha_k^2 - 2  \alpha_k \frac{2\sigma}{|y_k-\mu|} + \frac{4\sigma^2}{(x_k-\mu)^2} + 2  \alpha_k
+        \frac{2\sigma}{|y_k-\mu|} \ }{ \frac{4\sigma^2}{ (x_k-\mu)^2 } \alpha_k }   
+        \right) \right] \\[.5 em]  
+    & \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -   \cfrac{ \left(  \ \alpha_k  - 
+        \frac{2\sigma}{|y_k-\mu|} \right)^2 + 2\alpha_k \frac{2\sigma }{|x_k-\mu|} \ }{2
+        \left( \frac{2\sigma }{ |x_k-\mu|  } \right)^2 \alpha_k }       \right] \\[.5 em]
+     & \propto \alpha_k^{-\frac{3}{2}} \ \exp\left[ -    \cfrac{ \left(
+         \ \alpha_k  - \frac{2\sigma}{|y_k-\mu|} \right)^2    \ }{ 2
+         \left( \frac{2\sigma }{ |x_k-\mu|  } \right)^2 \alpha_k }         \right] \\[1 em]      
+    & \alpha_k | \text{rest}  \sim Inverse-Gaussian\left(  \frac{2\sigma}{ | y_k-\mu |  }, 1 \right) \\   
+\end{align*}
+
+
+Use a Gibbs Sampler to
+draw posterior estimates. Summarize the results for all model parameters in the usual fashion.
+
+\ 
+
+```{r}
+rm(list=ls());invisible(gc())
+setwd("G:\\math\\640")
+suppressMessages(library(rmutil, quietly = T))
+suppressMessages(library(MCMCpack, quietly = T))
+library(beepr)
+
+reign <- read.table("coup1280.txt", stringsAsFactors = F , header =T)
+B = 10000
+mus <- sigmas <- rep(NA,B)
+n <- nrow(reign)
+alphas <- matrix(NA, B, n )
+x <- reign$logCoup
+
+mup <- function( Alpha, y ){ sum(y*Alpha)/sum(Alpha) }
+vp <- function( Alpha, ss ){ (4*ss) / sum(Alpha)  }
+thetap <- function( Mu, ss, y){ (2*sqrt(ss))/ abs(y-Mu) }
+bp <- function( Mu, Alpha, y ){(1/8) * sum(Alpha * (y-Mu)^2 )}
+  
+a = b = 1
+
+alphas[1,] <- rinvgamma(n, 1, .5 )
+sigmas[1] <- rinvgamma(1, (n/2) + a, b + (1/8) )
+mus[1] <- rnorm(1 , mup(alphas[1,],x) , sqrt( vp(alphas[1,],sigmas[1] ) )  )
+```
+
+```{r invg, cache = T}
+set.seed(23)
+for( i in 2:B){
+  mus[i] <- rnorm( 1, mup(alphas[i-1,],x) , sqrt( vp(alphas[i-1,],sigmas[i-1] ) ) )
+  sigmas[i] <- rinvgamma(1, (n/2) + a , b + bp(mus[i-1],alphas[i-1] , x)  )
+  for(k in 1:n){ alphas[i,k] <- rinvgauss(1, thetap(mus[i],sigmas[i],x[k] ),  1) }
+}
+```
+
+```{r}
+mus <- tail(mus,B/2)
+sigmas <- tail(sigmas,B/2)
+
+require(mcmcplots)
+quantile(mus , probs = c(0.5, 0.025, 0.975))
+quantile(sigmas , probs = c(0.5, 0.025, 0.975))
+
+geweke.diag(mcmc( mus ) )
+geweke.diag(mcmc( sigmas ) )
+
+mcmcplot1( matrix(mus , ncol = 1)  )
+mcmcplot1( matrix(sigmas , ncol = 1)  )
+```
+
+\ 
+
+For both parameters, the Geweke diagnoistic was sufficiently small enough to suggest that both converged. This, along with the trace and ruuning mean plots, signals convergence of the parameters.
+
+
+\newpage 
+
+2. The Veteran's Administration conducted a study of time to death in veterans with
+various types of lung cancer. In total, 137 veterans were part of the study with lung
+cancer types including small cell, adenocarcinoma, squamous cell, and large cell. We
+are interested in building a parametric model for the survivor function of the 27 vets
+with large cell lung cancer. The Weibull distribution is commonly used as a parametric
+model for survivor functions. The form of the Weibull distribution is
+
+
+ 
+\begin{align*}
+    p(t_i) &= \cfrac{\theta}{\lambda^\theta} \ t_i^{\theta-1} \ 
+    \exp\left[- \left(\cfrac{t_i}{\lambda}\right)^\theta \right] 
+    \text{ for } t_i > 0 \text{ and } \lambda, \ \theta > 0.
+\end{align*}
+
+
+Determine the likelihood and, using the non-informative joint prior of \( \displaystyle \pi(\lambda,\theta) \propto \left(\lambda^\theta \right)^{-1}\), find the posterior and full conditionals.
+
+\begin{align*}
+    \mathcal{L}( t_i | \theta, \lambda ) & \propto \prod_{i=1}^n \ \cfrac{\theta}{\lambda^\theta}  \ t_i^\theta \ 
+        \exp\left[ - \left( \cfrac{t_i}{\lambda}\right)^\theta \right] \\[.5 em]
+    & \propto \left( \cfrac{\theta}{\lambda^\theta} \right)^n \ 
+        \left[ \ \prod_{i=1}^n  t_i  \right]^\theta \ 
+        \exp\left[ - \cfrac{1}{\lambda^\theta}  \sum_{i=1}^n t_i^\theta   \right] \\
+\end{align*}
+
+\begin{align*}
+    p( \theta, \lambda | t_i ) &  \propto \left( \cfrac{\theta}{\lambda^\theta} \right)^n \ 
+        \left[ \ \prod_{i=1}^n  t_i  \right]^\theta \ 
+        \exp\left[ - \cfrac{1}{\lambda^\theta}  \sum_{i=1}^n t_i^\theta   \right] \ 
+        \left( \lambda^\theta \right)^{-1} \\[.5 em]
+    & \propto \left( \lambda^\theta  \right)^{-(n+1)} \ \theta^n
+        \left[ \ \prod_{i=1}^n  t_i  \right]^\theta \ 
+        \exp\left[ - \cfrac{1}{\lambda^\theta}  \sum_{i=1}^n t_i^\theta   \right]  \\    
+\end{align*}
+
+\begin{align*}
+    p( \theta | \lambda , t_i ) & \propto \left( \lambda^\theta  \right)^{-(n+1)} \ \theta^n
+        \left[ \ \prod_{i=1}^n  t_i  \right]^\theta \ 
+        \exp\left[ - \cfrac{1}{\lambda^\theta}  \sum_{i=1}^n t_i^\theta   \right]  \\    
+\end{align*}
+
+\begin{align*}
+    p( \lambda | \theta , t_i ) & \propto \left( \lambda^\theta  \right)^{-(n+1)} \ 
+        \exp\left[ - \cfrac{1}{\lambda^\theta}  \sum_{i=1}^n t_i^\theta   \right] 
+        \hspace{.5 cm} \text{Let } \mu =  \lambda^\theta \\[.5 em]    
+    & \propto \left( \mu  \right)^{-(n+1)} \ 
+        \exp\left[ - \cfrac{1}{\mu}  \sum_{i=1}^n t_i^\theta   \right] \\[.5 em]     
+    \mu & \sim IG\left(n,\sum_{i=1}^n t_i^\theta \right)    
+\end{align*}
+
+
+Write a Gibbs-MH sampler to implement your model taking $B = 50000$ total samples and, post-burnin, determine an appropriate level of thinning. For the first run, use the starting values of $\theta^{(1)} = 0.1$ and $\lambda^{(1)} = 1$ and
+set the seed to 121 - use this run to tune your acceptance rate
+
+\ 
+
+```{r}
+rm(list=ls());invisible(gc())
+setwd("G:\\math\\640")
+library(mcmcplots, quietly = T)
+suppressMessages(library(MCMCpack, quietly = T))
+
+VA <- read.table('valc.txt', header = T)
+x <- VA$t
+
+Thetas <- Lambdas <- Ars <- list()
+thets <- c(0.1,0.2,0.15,0.05)
+lams <- c( 1,3,0.5, 1.5)
+seeds <- c(121,75,340,19)
+a <- 4.2
+b <- 3.9
+
+thetaden <- function(y, theta, lambda ){ 
+  lamthet <- lambda^theta
+  ( theta / lamthet  )^n * 
+    (prod(y))^theta * 
+    exp( - (1/ lamthet) * sum(y^theta)  ) *
+    (lamthet)^(-1)  
+}
+
+B <- 50000*2
+```
+
+
+```{r, cache = T}
+for( j in 1){
+
+thetas <- lambdas <- rep(NA,B) 
+Ar <- rep(0,B) 
+thetas[1] <- th <- thets[j]
+lambdas[1] <- lams[j]
+n <- length(x)
+
+set.seed(seeds[j])
+for( i in 2:B){
+
+  mu <- rinvgamma(1,  n ,  sum( x^thetas[i-1] ) )
+  lambdas[i] <- mu^(1/thetas[i-1])
+  
+  thetastar <- rgamma(1, a, b)
+
+  rho <- ( thetaden(x, thetastar, lambdas[i-1] ) / thetaden(x, thetas[i-1], lambdas[i-1] ) 
+       ) / (
+      dgamma(thetastar, a, b )/dgamma(thetas[i-1], a, b ) 
+       )
+  rho <- min(rho,1)
+  
+  U  <- runif(1)
+  if( U < rho ){
+    th <- thetastar
+    Ar[i] <- 1
+  }
+  thetas[i]  <- th
+}
+
+Ars[[j]] <- mean(Ar)
+Thetas[[j]] <- tail(thetas,B/2)
+Lambdas[[j]] <- tail(lambdas,B/2)
+}
+```
+```{r}
+Ars
+```
+
+
+\ 
+
+Repeat this step three
+more times using the starting values of $\theta^{(1)} = 0.2$ and $\lambda^{(1)} = 3$ with seed 75, $\theta^{(1)} = 0.15$
+and $\lambda^{(1)} = 0.5$ with seed 340, and $\theta^{(1)} = 0.05$ and $\lambda^{(1)} = 1.5$ with seed 19.
+
+\ 
+
+```{r, cache = T}
+for( j in 2:4){
+
+thetas <- lambdas <- rep(NA,B) 
+Ar <- rep(0,B) 
+thetas[1] <- th <- thets[j]
+lambdas[1] <- lams[j]
+n <- length(x)
+
+set.seed(seeds[j])
+for( i in 2:B){
+
+  mu <- rinvgamma(1,  n ,  sum( x^thetas[i-1] ) )
+  lambdas[i] <- mu^(1/thetas[i-1])
+  
+  thetastar <- rgamma(1, a, b)
+
+  rho <- ( thetaden(x, thetastar, lambdas[i-1] ) / thetaden(x, thetas[i-1], lambdas[i-1] ) 
+       ) / (
+      dgamma(thetastar, a, b )/dgamma(thetas[i-1], a, b ) 
+       )
+  rho <- min(rho,1)
+  
+  U  <- runif(1)
+  if( U < rho ){
+    th <- thetastar
+    Ar[i] <- 1
+  }
+  thetas[i]  <- th
+}
+
+Ars[[j]] <- mean(Ar)
+Thetas[[j]] <- tail(thetas,B/2)
+Lambdas[[j]] <- tail(lambdas,B/2)
+}
+```
+
+\ 
+
+Using the full post-burnin chains from each of the four runs, asses convergence for all model parameters with the Gelman-Rubin diagnostic.
+
+  \ 
+  
+```{r}
+mcmcT <- mcmcL <- list()
+for(w in 1:4){ 
+  mcmcT[[w]] <- mcmc(Thetas[[w]])
+  mcmcL[[w]] <- mcmc(Lambdas[[w]])
+  }
+
+GRtheta <- mcmc.list(list(mcmcT[[1]], mcmcT[[2]], mcmcT[[3]], mcmcT[[4]])) 
+GRlambda <- mcmc.list(list(mcmcL[[1]], mcmcL[[2]], mcmcL[[3]], mcmcL[[4]])) 
+
+gelman.diag(GRtheta)
+gelman.diag(GRlambda)
+```
+
+
+\ 
+
+$\hat{R}$ is near 1 for all parameters so we can be confident that convergence has been achieved.
+
+\ 
+
+
+Then thin the chains based on your selected level of thinning and combine to determine posterior summaries of $\lambda$ and $\theta$.
+
+\ 
+
+
+```{r}
+par(mfrow=c(2,2) , mar= c(2, 2 , 1, 1 ) )
+  for( w in 1:4){ acf(  Lambdas[[w]] , ylim=c(-.05,.05) )  }
+```
+
+
+
+\ 
+
+
+We see some autocorrelation among the $\lambda$'s.
+
+\ 
+
+```{r}
+par(mfrow=c(2,2) , mar= c(2, 2 , 1, 1 ) )
+for( w in 1:4){ acf(  Thetas[[w]]   , ylim=c(-.05,.05) )  }
+```
+
+\ 
+
+
+Had to zoom in to see the differences, but there is surely autocorrelation detected among the $\theta$'s. We will need to thin the $\theta$'s. First, we try a thinning by 5.
+
+\ 
+
+```{r}
+par(mfrow=c(2,2) , mar= c(2, 2 , 1, 1 )  )
+for( w in 1:4){ acf(  Thetas[[w]][ seq(1,B/2,5) ], ylim=c(-.05,.05) ) }
+```
+
+\ 
+
+Thinning by 5 has reduced the autocorrelation sufficiently. So we need to rerun our original sampler to get updated posterior estimates.
+
+\ 
+
+```{r, cache = T}
+rm(list=ls());invisible(gc())
+setwd("G:\\math\\640")
+
+VA <- read.table('valc.txt', header = T)
+x <- VA$t
+
+Thetas <- Lambdas <- Ars <- list()
+thets <- c(0.1,0.2,0.15,0.05)
+lams <- c( 1,3,0.5, 1.5)
+seeds <- c(121,75,340,19)
+a <- 4.2
+b <- 3.9
+
+thetaden <- function(y, theta, lambda ){ 
+  lamthet <- lambda^theta
+  ( theta / lamthet  )^n * 
+    (prod(y))^theta * 
+    exp( - (1/ lamthet) * sum(y^theta)  ) *
+    (lamthet)^(-1)  
+}
+
+B <- 50000*2*5
+
+for( j in 1:4){
+
+thetas <- lambdas <- rep(NA,B) 
+Ar <- rep(0,B) 
+thetas[1] <- th <- thets[j]
+lambdas[1] <- lams[j]
+n <- length(x)
+
+set.seed(seeds[j])
+for( i in 2:B){
+
+  mu <- rinvgamma(1,  n ,  sum( x^thetas[i-1] ) )
+  lambdas[i] <- mu^(1/thetas[i-1])
+  
+  thetastar <- rgamma(1, a, b)
+
+  rho <- ( thetaden(x, thetastar, lambdas[i-1] ) / thetaden(x, thetas[i-1], lambdas[i-1] ) 
+       ) / (
+      dgamma(thetastar, a, b )/dgamma(thetas[i-1], a, b ) 
+       )
+  rho <- min(rho,1)
+  
+  U  <- runif(1)
+  if( U < rho ){
+    th <- thetastar
+    Ar[i] <- 1
+  }
+  thetas[i]  <- th
+}
+
+Ars[[j]] <- mean(Ar)
+Thetas[[j]] <- tail(thetas,B/2)[ seq(1,B/2,5) ]
+Lambdas[[j]] <- tail(lambdas,B/2)[ seq(1,B/2,5) ] 
+}
+```
+
+\ 
+
+
+Posterior Summaries:
+
+\ 
+
+
+
+```{r}
+library(ggplot2, quietly = T)
+require(mcmcplots)
+
+#acceptance rates
+unlist( Ars )
+
+# Theta 
+thets <- Thetas; lambs <- Lambdas
+Thetas <- unlist(Thetas)
+quantile(Thetas, probs = c(0.025, 0.5, 0.975))
+
+# Lambda
+Lambdas <- unlist(Lambdas)
+quantile(Lambdas, probs = c(0.025, 0.5, 0.975))
+
+
+mcmcplot1( matrix(Thetas , ncol = 1)  )
+geweke.diag(mcmc( Thetas ) )
+
+mcmcplot1( matrix(Lambdas , ncol = 1)  )
+geweke.diag(mcmc( Lambdas ) )
+
+```
+
+\ 
+
+Although we combined the chains, we see that seperately the thinning reduced the autocorrelation for both $\theta$ and $\lambda$.
+
+\ 
+
+```{r}
+par(mfrow=c(2,2) , mar= c(2, 2 , 1, 1 ) )
+  for( w in 1:4){ acf(  lambs[[w]] , ylim=c(-.05,.05) )  }
+```
+
+```{r}
+par(mfrow=c(2,2) , mar= c(2, 2 , 1, 1 ) )
+  for( w in 1:4){ acf(  thets[[w]] , ylim=c(-.05,.05) )  }
+```
+
+
+\ 
+
+Once you have the posterior samples, estimate the survivor function using the following relationship:
+
+\begin{align*}
+    S(t) & = 1 - F(t) = 1 - \int_0^t p(a) \ \text{d}a.
+\end{align*}
+
+First, find the CDF of the Weibull.
+
+\begin{align*}
+F(t) & =
+\begin{cases}
+\hfil 1- \exp\left( - \cfrac{t}{\lambda} \right)^\theta   & t \geq 0 \\
+\hfil 0  & t < 0
+\end{cases}
+\end{align*}
+
+ 
+
+Next, using your posterior samples of $\theta$ and $\lambda$,
+generate a posterior distribution of survivor functions. To do this, you will need to
+assume a grid of possible survival times starting. Set your grid to begin at 1 and go
+to the largest observed survival time in the data by 1. Note $S(t)$ will be a function of
+your posterior samples and your grid $t$, no new model needs to be fit.
+
+\ 
+
+
+```{r CDF , cache = T}
+St <- function( y, theta, lambda  ){ exp( -y / lambda )^theta }
+
+smat <- matrix(NA, max(x),length(Thetas )   )
+for( k in 1:length(Thetas ) ){
+  smat[ ,k ] <- St( 1:max(x), Thetas[k], Lambdas[k] )
+}
+
+SCI <- matrix(NA, nrow(smat) , 2)
+
+for( i in 1:nrow(smat)) {
+  Q <- quantile(smat[i,], probs = c(0.025, 0.5, 0.975)) 
+  SCI[i,] <- Q[c(1,3)]; rm(Q)
+}
+
+msf <- apply(smat, 1,median )
+msf <- data.frame( time = 1:max(x) , msf )
+msf$lower <- SCI[,1]
+msf$upper <- SCI[,2]
+rm(smat)
+```
+
+\ 
+
+Summarize your
+results graphically with a plot of the median survivor function and credible interval for
+the survivor function.
+
+\ 
+
+```{r, echo = F}
+p<-ggplot(data=msf, aes(x=time, y=msf ))  + geom_line( col = "blue")+ theme_minimal()
+p+geom_ribbon(aes(ymin=lower, ymax=upper), linetype=2, alpha=0.1, fill = "blue")
+```
+
+
+
+
+\newpage 
+
+3. Data on the physiochemical properties of Vinho Verde, a Portuguese wine that is typically white, is in the file \verb|vinhoverde.txt|. It contains data on a wide variety of
+properties recorded on nearly 5,000 different bottles. The properties include fixed acidity, volatile acidity, citric acid, residual sugar, chlorides, free sulfur dioxide, total sulfur
+dioxide, density, pH, sulphates, and alcohol. We are interested in building a logistic
+regression model with a flat prior using these properties to predict whether or not the
+wine was rated as a quality wine (variable \verb|quality|).
+
+\ 
+
+Using an M-H Sampler, build a logistic regression model to predict quality.
+
+\ 
+
+
+The likelihood for this model is
+ 
+ \vspace{.5em}
+ 
+\hfil \(\displaystyle   \mathcal{L}(y_i|\beta,x_i)  \propto \exp\left[ \sum_{i=1}^n \bigg( y_i \left( x_i^T \beta \right) - \log\Big[ 1 + \exp\left( x_i^T \beta \right) \Big] \bigg) \right] \) 
+        
+\vspace{.75 em}
+        
+for  \( \displaystyle \beta = \begin{bmatrix} \beta_0 & \beta_1 & \dots & \beta_{11} \end{bmatrix}^T \) and 
+\( x_i^T =   \begin{bmatrix} 1 & x_{1i} &   \dots & x_{11i}  \end{bmatrix}^T \)
+
+\vspace{1em}
+
+We take the joint prior on $\beta$ to be flat, $\pi(\beta) \propto 1$, the posterior has the same form.
+
+\vspace{.5em}
+
+\hfil \( \displaystyle  P(\beta |y_i ,x_i)  \propto \exp\left[ \sum_{i=1}^n \bigg( y_i \left( x_i^T \beta \right) -     \log\Big[ 1 + \exp\left( x_i^T \beta \right) \Big] \bigg) \right] \) 
+        
+
+\ 
+
+```{r, cache = T}
+rm(list=ls());invisible(gc())
+setwd("G:\\math\\640")
+library(mcmcplots)
+library(MCMCpack)
+library(mvtnorm)
+
+B = 8000
+wine <- read.table('vinhoverde.txt', header = TRUE)
+
+fit  <- glm(quality ~ . ,   family = binomial, data = wine)
+vbeta <- vcov(fit)
+X <- model.matrix(fit) 
+Y <- wine$quality
+
+betas  <- matrix(0, nrow = B, ncol = ncol(X))
+betas[1,] <- coef(fit)
+Ar <- rep(NA,B-1)
+
+tdens <- function(b, W, z){
+  sum( z*(W%*%b) ) - sum(log(  1 + exp(W%*%b))) 
+}
+
+tau = .3
+
+set.seed(870)
+for(i in 2:B){
+  
+  bstar <- rmvnorm(1, betas[i-1,], tau*vbeta )
+  r  <- exp(tdens(t(bstar), X, Y)-tdens(betas[i-1,], X, Y))
+  U  <- runif(1)
+  if(U < min(1,r)){
+    betas[i,] <-bstar
+    Ar[i-1]  <- 1
+  } else{
+    betas[i,] <- betas[i-1,]
+    Ar[i-1]  <- 0
+  }
+  
+}
+mean(Ar)
+```
+
+\ 
+
+Justify your choice of final model using statistical support.
+
+\ 
+
+```{r}
+CI <- t(apply(betas, 2, quantile, probs = c(0.5, 0.025, 0.975)))
+rownames(CI) <- colnames(X)
+CI <- round(CI,6)
+CI
+```
+
+\ 
+
+We remove the variables with $0$ in the credible interval to build our final model.
+
+\ 
+
+```{r}
+CI0 <- (CI[ ,2 ] < 0 & CI[ ,3] > 0 )
+CI <-  CI[     !CI0, ] 
+CI <- as.data.frame(CI)
+#CI$dif <- CI[,3]-CI[,2]
+CI
+```
+
+\ 
+
+Design your sampler so to retain a total of 4,000 total samples (after burn-in and, if necessary, thinning). What
+variables best predict the quality of the wine?
+
+\ 
+
+Looking for autocorrelation.
+
+\ 
+
+```{r , fig.width=6.5, fig.height=9 }
+par(mfrow=c(4,3))
+for( k in 1:12){acf(betas[,k], ylim=c(-.05/2,.4 ))}
+```
+
+\ 
+
+The graphs are not exactly identical, but each variable is showing the same type of autocorrelation. We will rerun the sampler to address autocorrelation by thinning.
+
+\ 
+
+```{r, eval = T, cache = T}
+rm(list=ls());invisible(gc()) 
+setwd("G:\\math\\640")
+library(mcmcplots)
+library(MCMCpack)
+library(mvtnorm)
+
+B = 8000 * 20
+wine <- read.table('vinhoverde.txt', header = TRUE)
+
+fit  <- glm(quality ~ . ,   family = binomial, data = wine)
+
+vbeta <- vcov(fit)
+X <- model.matrix(fit) 
+Y <- wine$quality
+
+betas  <- matrix(0, nrow = B, ncol = ncol(X))
+betas[1,] <- coef(fit)
+Ar <- rep(NA,B-1)
+
+tdens <- function(b, W, z){
+  sum( z*(W%*%b) ) - sum(log(  1 + exp(W%*%b))) 
+}
+
+tau = .3
+
+set.seed(870)
+for(i in 2:B){
+  
+  bstar <- rmvnorm(1, betas[i-1,], tau*vbeta )
+  r  <- exp(tdens(t(bstar), X, Y)-tdens(betas[i-1,], X, Y))
+  U  <- runif(1)
+  if(U < min(1,r)){
+    betas[i,] <-bstar
+    Ar[i-1]  <- 1
+  } else{
+    betas[i,] <- betas[i-1,]
+    Ar[i-1]  <- 0
+  }
+}
+mean(Ar)
+```
+
+
+```{r}
+betas <- tail(betas,B/2)
+betas <- betas[ seq(1,B/2,20) , ]
+```
+```{r , fig.width=6.5, fig.height=9 }
+par(mfrow=c(4,3))
+for( k in 1:12){acf(betas[,k], ylim=c(-.1,.1))}
+```
+
+\ 
+
+The thinning has done an adequate job of reducing the autocorrelation.
+
+\ 
+
+What variables best predict the quality of the wine?
+
+\ 
+
+```{r}
+CI <- t(apply(betas , 2, quantile, probs = c(0.5, 0.025, 0.975)))
+rownames(CI) <- colnames(X)
+CI <- round(CI,6)
+CI0 <- (CI[ ,2 ] < 0 & CI[ ,3] > 0 )
+CI <-  CI[     !CI0 , ] 
+CI <- as.data.frame(CI)
+CI$dif <- CI[,3]-CI[,2]
+CI
+```
+
+\ 
+
+The variables that best predict the quality of wine are: \verb|volatile.acidity|, \verb|residual.sugar|, \verb|free.sulfur.dioxide|, \verb|density|, \verb|pH|, \verb|sulphates|, and \verb|alcohol|.
+
+\ 
+
+Once you have selected the variables for your final model and run your M-H sampler,
+run the Normal Approximation to logistic regression setting the seed to 1908, generating 4,000 total samples.
+
+\ 
+
+
+
+The likelihood for this model is
+ 
+ \vspace{.5em}
+ 
+\hfil \(\displaystyle   \mathcal{L}(y_i|\beta,x_i)  \propto \exp\left[ \sum_{i=1}^n \bigg( y_i \left( x_i^T \beta \right) - \log\Big[ 1 + \exp\left( x_i^T \beta \right) \Big] \bigg) \right] \) 
+        
+\vspace{.75 em}
+        
+for  \( \displaystyle \beta = \begin{bmatrix} \beta_0 & \beta_1 & \dots & \beta_{7} \end{bmatrix}^T \) and 
+\( x_i^T =   \begin{bmatrix} 1 & x_{1i} &   \dots & x_{7i}  \end{bmatrix}^T \)
+
+\vspace{1em}
+
+We take the joint prior on $\beta$ to be flat, $\pi(\beta) \propto 1$, the posterior has the same form.
+
+\vspace{.5em}
+
+\hfil \( \displaystyle  P(\beta |y_i ,x_i)  \propto \exp\left[ \sum_{i=1}^n \bigg( y_i \left( x_i^T \beta \right) -     \log\Big[ 1 + \exp\left( x_i^T \beta \right) \Big] \bigg) \right] \) 
+        
+
+\ 
+
+There is an approximate Normal Posterior, so the posterior of $\beta$ can then be sampled from
+\begin{align*}
+\beta| y & \sim N\left( \hat{\beta}, V_\beta \right)
+\end{align*}
+
+Where $V_\beta$ is the last working variance from the iterative solution to the posterior mode.
+
+\ 
+
+
+```{r lna, cache = T}
+library(mvtnorm)
+bhat <- coef(fit)[ which( names( coef(fit) ) %in% rownames(CI) ) ];bhat
+# names( which( (summary(fit)$coeff[-1,4] < 0.05) == T) ) == names(bhat)[-1]
+  
+vbetas <- vbeta[,which( names( coef(fit) ) %in% rownames(CI) ) ]
+vbetas <- vbetas[ which( names( coef(fit) ) %in% rownames(CI) ), ]
+
+set.seed(1908)
+Betas	<- rmvnorm(4000, mean = bhat, sigma = vbetas); dim(Betas)
+lna <- round( t(apply(Betas, 2, quantile, probs = c(0.5, 0.025, 0.975))) , 6)
+lna <- as.data.frame(lna)
+lna$dif <- lna[,3]-lna[,2]
+lna;CI
+lna[,1] - CI[,1]
+lna$dif- CI$dif
+```
+
+\ 
+
+Compare the results from the two models focusing on the
+coeffcients and intervals. In particular, does one model tend to have smaller credible
+intervals? Or do the models give the same/similar results? Comment on any differences
+you see.
+
+\ 
+
+The models are relatively similar in their estimates, with very slight differences in the coefficient estimates. The first dataframe above is the normal approximation and the second one is the M-H sampler. The last column in each dataframe is the width of the credible interval. Subtracting each of the respective widths, we see that the normal approximation produces larger credible intervals for each of the coefficients except for one.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
