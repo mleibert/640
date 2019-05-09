@@ -108,7 +108,7 @@ The observed response variable $y_i$, which quantile of shares does it attract, 
 $$y_i = \begin{cases} \hfil 1 &  \text{if  } \  \gamma_0 < z_i \leq \gamma_1 \\[.3 em] \hfil 2  & \text{if  } \ \gamma_1 < z_i \leq \gamma_2 \\[.3 em] & \hspace{11 mm} \vdots \\[.4 em] \hfil 5  & \text{if  } \ \gamma_4 < z_i \leq \gamma_5 \\ \end{cases}$$
 
 
-Where $\gamma_0$ is $-\infty$ and $\gamma_5$ is $\infty$
+Where $\gamma_0$ is $-\infty$, $\gamma_1$ is fixed at 0, and $\gamma_5$ is $\infty$
 
 ---
 
@@ -138,7 +138,7 @@ $$\begin{align*} P(z,\gamma,\beta|y,X) &  \propto  \left[ \ \prod_{i=1}^{n} \sum
 
 # Flat Prior
 
-The conditional for $\beta$ is:
+We now derive the conditional for $\beta$:
 
 $$\begin{align*} p(\beta|z,\gamma,X,y) & \propto \exp\left[-\cfrac{1}{2} \left( \beta'X'X\beta - 2\beta'X'X(X'X)^{-1}X'z \right) \right]\end{align*}$$
 
@@ -152,9 +152,11 @@ Which is the kernel of a normal distribution, so $$\begin{align*} \beta|z,\gamma
 The conditional for $\gamma_j$, where $j=2,3,4$:
 
 $$\begin{align*} p(\gamma_j|z,\beta,X,y) & \propto \prod_{i=1}^n I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}} + I_{ \{ \gamma_{j} < z_i \leq \gamma_{j+1} \} }  \ I_{\{y_i = j + 1 \}}\end{align*}$$
+--
+
 Which is a uniform distribution
 
-$$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1},\gamma_{j+1}\}\}\Big)$$
+$$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1\}, \gamma_{j+1}\} \Big)$$
 
 
 ---
@@ -162,6 +164,9 @@ $$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \
 #Flat Prior
 
 
+<br>
+
+<br>
 
 To find the conditionals for $z_i$, we must consider the separate cases of $y_i$
 
@@ -173,14 +178,258 @@ If $y_i = j$, the conditional for $z_i$ is:
 $$\begin{align*} p( z |\gamma,\beta,X,y) & \propto  \exp\left[-\cfrac{1}{2}\left(z_i - x'_i\beta \right)^2\right]\end{align*}  I_{ \{ \gamma_{j-1} < z_i \leq \gamma_{j} \} }$$
 
 
-Which is a truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$
-j .
+Which is a truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$.
 
 
 
 
+---
+
+# Penalization
+
+<br>
+
+ + With a large number of predictors our estimates can be noisy.
+ 
+ + We wish to perform regularization to give more stable estimates and perform shrinkage
+ 
+ + We will consider the Bayesian Lasso and a Rdige Regression in an attempt to produce better estimates.
+ 
+ + Recall the Bayesian Lasso uses the double exponential prior and the Bayesian Ridge regression utilizes a normal prior.
+
+---
+
+# L1 LASSO
+
+<br>
+
+<br>
+
+Likelihood
 
 
 
+$$\begin{align*} \mathcal{L}(y|z,\gamma,\beta,X) & \propto \prod_{i=1}^{n} \left[ \ \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z_i - x'_i \beta \right)^2 \right] \\[.5em] & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \\[1em] \end{align*}$$
 
 
+<br>
+
+---
+
+# L1 LASSO
+
+Posterior
+
+ + Instead of applying the Laplacian prior to directly to the likelihood, we can express the Laplacian as a mixture model of normals with inverse gamma priors. 
+
+--
+
+ + Previously: $\beta_k \sim L(0 , \lambda^{-1})$
+ 
+ 
+--
+ 
+ + Now: $\beta_k \sim N\left(0 , \cfrac{4 \left(\lambda^{-1}\right)^2 }{\alpha_k} \right)$, where $\left(\lambda^{-1}\right)^2 \sim IG(a,b)$ and $\alpha_k \overset{iid}{\sim} IG\left(1,\frac{1}{2} \right)$
+
+--
+
+ + This allows us to utilize a Gibbs sampler
+
+---
+
+# L1 LASSO
+
+<br>
+
+Full Posterior
+
+$$\begin{align*} P(z,\gamma,\beta,\alpha,\lambda|X,y) & \propto \mathcal{L}(y|z,\gamma,\beta,X) \pi(\beta|\lambda,\alpha)\pi(\lambda)\pi(\alpha)    \end{align*}$$ 
+<br>
+
+$$\begin{align*} & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right] \left[\left(\lambda^{-1}\right)^2\right]^{-(a+1)} \cdot \\[.5em] & \hspace{10 mm} \exp\left(-\cfrac{b}{ \ \left(\lambda^{-1}\right)^2 \ }\right) \prod_{k=1}^K \left( \cfrac{\alpha_k}{\left(\lambda^{-1}\right)^2} \right)^\frac{1}{2} \exp\left[-\cfrac{\alpha_k \ \beta_k^2}{8\left(\lambda^{-1}\right)^2} \right] \alpha_k^{-2} \exp\left(-\cfrac{1}{2\alpha_k}\right) \end{align*}$$
+
+
+---
+
+# L1 LASSO
+
+<br>
+
+The full conditionals of $z$ and $\gamma_j$ are not affected by the new prior.
+
+--
+
+Recall : 
+
+--
+
+If $y_i = j$, the conditional for $z_i$ is:
+
+
+$$\begin{align*} p( z| \gamma,\beta,\alpha,\lambda,X,y ) & \propto  \exp\left[-\cfrac{1}{2}\left(z_i - x'_i\beta \right)^2\right]\end{align*}  I_{ \{ \gamma_{j-1} < z_i \leq \gamma_{j} \} }$$
+
+A truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$.
+
+
+--
+
+
+The conditional for $\gamma_j$ is:
+
+$$\gamma_j|z,\beta,X,y \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1}\}\}\Big)$$
+---
+
+# L1 LASSO
+
+<br>
+
+The conditional for $\beta$ is:
+
+$$\scriptsize \begin{align*} P(\beta|\text{rest}) & \propto \exp\left\{-\cfrac{1}{2} \left[ \left( \beta  - \left( X'X + \frac{\lambda^2}{4}\bf{D}_\alpha \right) X'Z   \right)'\left( X'X + \frac{\lambda^2}{4}\bf{D}_\alpha \right) \left( \beta  - \left( X'X + \frac{\lambda^2}{4}\bf{D}_\alpha \right) X'Z   \right) \right]\right\}\end{align*}$$ 
+
+Where $\bf{D}_\alpha$ $= \text{diag}(\alpha_1, ...,\alpha_k)$
+
+--
+
+
+
+<br>
+
+We recognize this as the kernel of a normal distribution, so
+
+$$\small  \beta|\text{rest} \sim N\left( \left( X'X + \frac{\lambda^2}{4}\bf{D}_\alpha \right) X'Z  , \left( X'X + \frac{\lambda^2}{4}\bf{D}_\alpha \right)^{-1} \right)$$
+
+---
+
+# L1 LASSO
+
+<br>
+
+The conditional on $\lambda$ is:
+
+$$P(\lambda|z, \gamma,\beta,\alpha,X,y) \propto \left(\lambda^2\right)^{\frac{K}{2}+a+1} \exp\left[-\lambda^2 \left(b+ \frac{1}{8} \sum_{k=1}^K \alpha_k\beta_k^2 \right)\right] $$
+
+Which is identifiable as the kernel of the a Gamma.
+
+$$\lambda|z, \gamma,\beta,\alpha,X,y \sim Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k\beta_k^2 \right)$$
+
+---
+
+
+# L1 LASSO
+
+<br>
+
+Finally, the conditional for $\alpha_p$
+
+
+$$P(\alpha_p |\lambda,z, \gamma,\beta,\alpha_{p\neq k},X,y) \propto \alpha_p^{-\frac{3}{2}} \exp\left[ -\cfrac{1}{2} \cfrac{\left( \alpha_p - \frac{2\lambda^{-1}}{|\beta_p|} \right)^2}{\alpha_p\left(\frac{2\lambda^{-1}}{|\beta_p|}\right)^2} \right]$$
+
+
+Which is a kernel of the inverse Gaussian.
+
+$$\alpha_p |\lambda,z, \gamma,\beta,\alpha_{p\neq k},X,y \sim N^{-1}\left(  \frac{ 2  \lambda^{-1}  }{|\beta_k|} , 1 \right)$$
+
+---
+
+# L1 LASSO
+
+After deriving the conditionals we can set up a Gibbs sampler without a M-H step.
+
+--
+
+1. For each $j = 2,...,J$ draw $\small\gamma_j^{(b)}$ from $$\scriptsize U\Big(\max\left\{\max\left\{z_i^{(b-1)}: y_i = j\right\}, \gamma_{j-1}^{(b-1)} \right\}, \min\left\{\min\left\{ z_i^{(b-1)}:y_i = j+1 \right\}, \gamma_{j+1}^{(b-1)} \right\} \Big)$$
+
+--
+
+1. For each $j = 1,...,J$ draw $z_i^{(b)} | y_i = j$ from
+
+
+$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$
+--
+
+3. Draw $\lambda^{2^{(b)}}$ from $Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k^{(b-1)} \beta_k^{2^{(b-1)}} \right)$
+
+--
+
+4. For each $k = 1,...,K$ draw $\alpha_k^{(b)}$ from $N^{-1}\left( \frac{ 2  \lambda^{-1^{(b)}}  }{|\beta_k^{(b-1)}|} , 1\right)$
+
+--
+
+5. Draw $\beta^{(b)}$ from 
+
+$$\small N\left( \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right) X'Z^{(b)}  , \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} \right)$$
+---
+
+
+# L2 Ridge regression
+
+<br>
+
+Lastly, we consider the Bayesian Ridge regression, which is $\beta_k \sim N\left(0,\lambda^{-1}\right)$. Thus we have:
+ 
+$$\begin{align*}\pi\left(\beta_1,...,\beta_K\right) \propto \prod_{k=1}^K \lambda^{\frac{1}{2}} \ \exp\left[-\cfrac{\lambda}{2} \beta_k^2\right] \\[.5em] \propto \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right] \end{align*}$$
+
+--
+
+With Jeffrey's prior as the hyper-prior:
+
+$$\pi(\lambda) \propto \lambda^{-1}$$
+---
+
+This leads to the posterior:
+
+<br>
+
+$$\small \begin{align*}P(\beta,\lambda,z|y) & \propto \mathcal{L}(y|\beta,\lambda,z)\pi(\beta|\lambda)\pi(\lambda)\\[.5em] & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right]  \cdot  \\[.5em] & \hspace{10mm} \exp\left[-\cfrac{1}{2} (z-X\beta)'(z-X\beta) \right]  \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right]\lambda^{-1}\\[.5em] & \propto \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \Big( (z-X\beta)'(z-X\beta) - \lambda B'B \Big)\right]\end{align*}$$
+
+---
+
+
+Thus the full conditional on $\lambda$ is:
+
+$$\small P(\lambda|\text{rest}) \propto \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \  B'B\right]$$
+
+--
+
+Which is recognizable as a $\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} B'B \right)$
+
+--
+
+<br>
+
+The conditional of $\beta$ is:
+
+$$\small P(\beta|\text{rest}) \propto \exp\left[-\cfrac{1}{2}\left( B'(X'X+\lambda I_K)\beta - 2\beta(X'X+\lambda I_K)(X'X+\lambda I_K)^{-1}X'z\right) \right]$$
+--
+
+Which is the kernel of a multivariate normal random variable with distribution $$\beta|\text{rest} \sim N\left((X'X+\lambda I_K)^{-1}X'z, (X'X+\lambda I_K)^{-1} \right)$$
+
+---
+<br>
+
+The full conditionals of $z$ and $\gamma_j$ are not affected by the new prior.
+
+--
+
+Recall : 
+
+
+
+If $y_i = j$, the conditional for $z_i$ is:
+
+
+$$\begin{align*} p( z| \text{rest} ) & \propto  \exp\left[-\cfrac{1}{2}\left(z_i - x'_i\beta \right)^2\right]\end{align*}  I_{ \{ \gamma_{j-1} < z_i \leq \gamma_{j} \} }$$
+
+A truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$.
+
+
+--
+
+
+The conditional for $\gamma_j$ is:
+
+$$\gamma_j|\text{rest} \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1}\}\}\Big)$$
+---
+
+We finally specifiy a Gibbs sampling scheme

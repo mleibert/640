@@ -191,8 +191,10 @@ fit <- onpfit
 gammas <- matrix( NA, B, uy + 1 )
 gammas[,1] <- -Inf
 gammas[,2] <- 0
-gammas[,uy+1] <- Inf 
+gammas[,uy+1] <- Inf
 gammas[1,] <- c(-Inf, 0, fit$zeta[-1], Inf)
+
+gammas[1,] <- c(-Inf, 0, .7,1.2,1.8, Inf)
 
 betas <- alphas <- matrix( NA, B, length(coef(fit)) + 1)
 p <- ncol(betas)
@@ -249,21 +251,46 @@ system.time(
     A <- ((lambdas[i])^2/4)  * diag(alphas[i,] )
     pxtx <- solve(xtx + A)
     betas[i,] <- rmvnorm( 1 , pxtx %*%  t(X)%*% z , pxtx )
+    if( i %in% seq( 1000, 79000, 1000) ){print(i)}
   }
 )
 beep("coin")
 
+write.csv(betas,"L1betas.csv",row.names=F)
+
 gammas <- tail(gammas,B/2)
 betas <- tail(betas, B/2 )
 mcmcplot1(betas[,4,drop  = F])
-mcmcplot1(gammas[,5,drop=F])
+mcmcplot1(gammas[,4,drop=F])
 
-Gammas <- apply( tail(gammas, B/2 ) , 2, median)
+G <- gammas[,4]
+mcmcplot1( as.matrix(G[seq(1,length(G),20)]) )
+
+
+
+Gammas <- apply( tail(gammas[,3], B/2 ) , 2, median)
 Betas <- apply( tail(betas, B/2 ) , 2, median)
 
-
- cbind( predict(onpfit, onp.test[1:5,], type = "probs")  , onp.test[1:5,]$share_cat)
+cbind( predict(onpfit, onp.test[1:5,], type = "probs")  , onp.test[1:5,]$share_cat)
+mcmcfit <- MCMCoprobit( share_cat ~ . , data = onp.train    )
 
 
 coef( fit )
 Betas
+
+mcmcfit <- MCMCoprobit( share_cat ~ . , data = onp.train  , burnin = 10000 , mcmc = 10000  )
+
+mcmcplot1(mcmcfit[,ncol(mcmcfit),drop=F])
+tail(gammas)
+head(mcmcfit)
+tail(mcmcfit)
+
+SVs <- list()
+
+
+SVs[[1]] <- apply(mcmcfit,2,median)
+SVs[[2]] <- tail( SVs[[1]] , 3)
+SVs[[1]] <- head( SVs[[1]] , -3)
+
+
+onpfit

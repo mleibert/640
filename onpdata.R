@@ -73,5 +73,6 @@ onp$self_reference_avg_sharess <- onp$self_reference_avg_sharess/max(onp$self_re
 
 
 onp.test <- onp
+onp.test$topic <- as.factor(onp.test$topic )
 rm(onp)
 
