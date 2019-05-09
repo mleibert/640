@@ -29,6 +29,7 @@ find.image=function(name){grep(name,list.files(recursive = TRUE),value=TRUE)}
 
 #Data
 
+<br>
 
 Online News Popularity Data Set 
 
@@ -38,7 +39,6 @@ Online News Popularity Data Set
  
  + We end up removing some variables that display multicollinearity, and we also scale the continuous variables.
 
- + Dataset has 39,644 samples. We will use a 30,000 train / 9,644 test split.
 ---
 
 #Data
@@ -52,6 +52,13 @@ onp <- rbind( onp , rep(" ", 7) )
 print(onp[ ,c(3,12,13,29, 40 , 47 , 45)], row.names = F)
 ```
 
+--
+
+<br>
+
+ + Dataset has 39,644 samples. We will use a n=30,000 train / 9,644 test split.
+
+ + There are 25 covariates, with $K=30$ estimated parameters, including the intercept.
 
 
 ---
@@ -78,9 +85,16 @@ print(onp[ ,c(3,12,13,29, 40 , 47 , 45)], row.names = F)
 
  + We will test the robustness of our estimates for $\beta$ with three different priors on $\beta$: a flat prior, a Laplacian prior, and a Normal prior.
 
+
+--
+
+ + The Laplacian and Normal priors turn our regression into Bayesian versions of LASSO regression and ridge regression respectively, a purposeful choice as we have many covariates under consideration in our regression.
+ 
 --
 
  + We will use out-of-sample testing to check our results.
+
+
 
 
 ---
