@@ -6,6 +6,7 @@
     <meta name="author" content="Cin Cin Fang &amp; Michael Leibert" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+    <script src="libs/kePrint/kePrint.js"></script>
     <link rel="stylesheet" href="test.css" type="text/css" />
   </head>
   <body>
@@ -83,7 +84,7 @@ A sample of a few rows and columns:
 
 --
 
- + We will out-of-sample testing to check our results.
+ + We will use out-of-sample testing to check our results.
 
 
 ---
@@ -101,7 +102,7 @@ A sample of a few rows and columns:
 
  + For this formulation, the latent variable `\(z_i\)` of article `\(i\)`, `\(z \overset{iid}{\sim} N( x'_i \beta ,1)\)`
 
- + Where `\(x_i\)` is the vector of predictive variables and `\(\beta\)` is the vector of coeffcients we are ultimately interested in.
+  + Where `\(x_i\)` is the vector of predictive variables and `\(\beta\)` is the vector of coeffcients we are ultimately interested in.
  
 --
 
@@ -184,6 +185,26 @@ If `\(y_i = j\)`, the conditional for `\(z_i\)` is:
 Which is a truncated normal with mean `\(x'_i\beta\)`, variance 1, and truncated to be between `\(\gamma_{j-1}\)` and `\(\gamma_j\)`.
 
 
+---
+
+#Flat Prior
+
+We specifiy a Gibbs sampling scheme:
+
+
+--
+
+ 1. For each `\(j = 2,...,J\)` draw `\(\small\gamma_j^{(b)}\)` from `$$\scriptsize U\Big(\max\left\{\max\left\{z_i^{(b-1)}: y_i = j\right\}, \gamma_{j-1}^{(b-1)} \right\}, \min\left\{\min\left\{ z_i^{(b-1)}:y_i = j+1 \right\}, \gamma_{j+1}^{(b-1)} \right\} \Big)$$`
+
+--
+
+ 2. For each `\(j = 1,...,J\)` draw `\(z_i^{(b)} | y_i = j\)` from `$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$`
+
+--
+
+ 3. Draw `\(\beta^{(b)}\)` from 
+
+`$$\small N\left(  \left( X'X \right)^{-1} X'z^{(b)}  , \left( X'X  \right)^{-1} \right)$$`
 
 
 ---
@@ -311,6 +332,7 @@ We recognize this as the kernel of a normal distribution, so
 The conditional on `\(\lambda\)` is:
 
 $$P(\lambda|z, \gamma,\beta,\alpha,X,y) \propto \left(\lambda^2\right)^{\frac{K}{2}+a+1} \exp\left[-\lambda^2 \left(b+ \frac{1}{8} \sum_{k=1}^K \alpha_k\beta_k^2 \right)\right] $$
+--
 
 Which is identifiable as the kernel of the a Gamma.
 
@@ -345,27 +367,27 @@ After deriving the conditionals we can set up a Gibbs sampler without a M-H step
 
 --
 
-1. For each `\(j = 1,...,J\)` draw `\(z_i^{(b)} | y_i = j\)` from
-
-
-`$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$`
---
-
-3. Draw `\(\lambda^{2^{(b)}}\)` from `\(Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k^{(b-1)} \beta_k^{2^{(b-1)}} \right)\)`
+1. For each `\(j = 1,...,J\)` draw `\(z_i^{(b)} | y_i = j\)` from `$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$`
 
 --
 
-4. For each `\(k = 1,...,K\)` draw `\(\alpha_k^{(b)}\)` from `\(N^{-1}\left( \frac{ 2  \lambda^{-1^{(b)}}  }{|\beta_k^{(b-1)}|} , 1\right)\)`
+1. Draw `\(\lambda^{2^{(b)}}\)` from `\(Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k^{(b-1)} \beta_k^{2^{(b-1)}} \right)\)`
 
 --
 
-5. Draw `\(\beta^{(b)}\)` from 
+1. For each `\(k = 1,...,K\)` draw `\(\alpha_k^{(b)}\)` from `\(N^{-1}\left( \frac{ 2  \lambda^{-1^{(b)}}  }{|\beta_k^{(b-1)}|} , 1\right)\)`
 
-`$$\small N\left( \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right) X'Z^{(b)}  , \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} \right)$$`
+--
+
+1. Draw `\(\beta^{(b)}\)` from 
+
+`$$\small N\left( \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} X'z^{(b)}  , \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} \right)$$`
 ---
 
 
 # L2 Ridge regression
+
+&lt;br&gt;
 
 &lt;br&gt;
 
@@ -380,22 +402,25 @@ With Jeffrey's prior as the hyper-prior:
 `$$\pi(\lambda) \propto \lambda^{-1}$$`
 ---
 
+&lt;br&gt;
+
 This leads to the posterior:
 
 &lt;br&gt;
 
-`$$\small \begin{align*}P(\beta,\lambda,z|y) &amp; \propto \mathcal{L}(y|\beta,\lambda,z)\pi(\beta|\lambda)\pi(\lambda)\\[.5em] &amp; \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right]  \cdot  \\[.5em] &amp; \hspace{10mm} \exp\left[-\cfrac{1}{2} (z-X\beta)'(z-X\beta) \right]  \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right]\lambda^{-1}\\[.5em] &amp; \propto \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \Big( (z-X\beta)'(z-X\beta) - \lambda B'B \Big)\right]\end{align*}$$`
+`$$\small \begin{align*}P(\beta,\lambda,z|y) &amp; \propto \mathcal{L}(y|\beta,\lambda,z)\pi(\beta|\lambda)\pi(\lambda)\\[.5em] &amp; \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right]  \cdot  \\[.5em] &amp; \hspace{10mm} \exp\left[-\cfrac{1}{2} (z-X\beta)'(z-X\beta) \right]  \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right]\lambda^{-1}\\[.5em] &amp; \propto \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} &lt; z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \Big( (z-X\beta)'(z-X\beta) - \lambda \beta'\beta \Big)\right]\end{align*}$$`
 
 ---
+# L2 Ridge regression
 
 
 Thus the full conditional on `\(\lambda\)` is:
 
-`$$\small P(\lambda|\text{rest}) \propto \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \  B'B\right]$$`
+`$$\small P(\lambda|\text{rest}) \propto \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{\lambda}{2} \  \beta'\beta\right]$$`
 
 --
 
-Which is recognizable as a `\(\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} B'B \right)\)`
+Which is recognizable as a `\(\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} \beta'\beta \right)\)`
 
 --
 
@@ -403,7 +428,7 @@ Which is recognizable as a `\(\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} B'B \
 
 The conditional of `\(\beta\)` is:
 
-`$$\small P(\beta|\text{rest}) \propto \exp\left[-\cfrac{1}{2}\left( B'(X'X+\lambda I_K)\beta - 2\beta(X'X+\lambda I_K)(X'X+\lambda I_K)^{-1}X'z\right) \right]$$`
+`$$\small P(\beta|\text{rest}) \propto \exp\left[-\cfrac{1}{2}\left( \beta'(X'X+\lambda I_K)\beta - 2\beta(X'X+\lambda I_K)(X'X+\lambda I_K)^{-1}X'z\right) \right]$$`
 --
 
 Which is the kernel of a multivariate normal random variable with distribution `$$\beta|\text{rest} \sim N\left((X'X+\lambda I_K)^{-1}X'z, (X'X+\lambda I_K)^{-1} \right)$$`
@@ -434,8 +459,222 @@ The conditional for `\(\gamma_j\)` is:
 
 `$$\gamma_j|\text{rest} \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1}\}\}\Big)$$`
 ---
+# L2 Ridge regression
 
 We finally specifiy a Gibbs sampling scheme
+
+
+--
+
+1. For each `\(j = 2,...,J\)` draw `\(\small\gamma_j^{(b)}\)` from `$$\scriptsize U\Big(\max\left\{\max\left\{z_i^{(b-1)}: y_i = j\right\}, \gamma_{j-1}^{(b-1)} \right\}, \min\left\{\min\left\{ z_i^{(b-1)}:y_i = j+1 \right\}, \gamma_{j+1}^{(b-1)} \right\} \Big)$$`
+
+--
+
+1. For each `\(j = 1,...,J\)` draw `\(z_i^{(b)} | y_i = j\)` from `$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$`
+
+--
+
+1. Draw `\(\lambda^{(b)}\)` from `\(Gamma\left( \frac{K}{2} , \frac{1}{2}   \beta'^{(b-1)}   \beta^{(b-1)} \right)\)`
+
+--
+
+1. Draw `\(\beta^{(b)}\)` from 
+
+`$$\small N\left( \left( X'X + \lambda^{(b)} I_k \right)^{-1} X'z^{(b)}  , \left( X'X + \lambda^{(b)} I_k \right)^{-1} \right)$$`
+
+
+---
+
+# Results
+
++ We sample using the data in a training set consisting of 30,000 datapoints.
+
+--
+
++ The parameters of interest are the coeffcients of the regression, `\(\beta\)`, and the thresholds for the categories, `\(\gamma\)`.
+
+--
+
++ Our estimates of some of the parameters `\(\beta\)` clearly are affected by the prior:
+
+.center[![:scaleimgpct 60%](./images/1.bmp)]
+
+
+---
+
+# Results
+
+The variables that are associated with increased sharability are `kw_avg_avg` (average shares of the average keyword),
+`num_hrefs` (number of links), `self_reference_avg_sharess` (average shares of referenced articles in Mashable),
+while `global_rate_negative_words` and `num_self_hrefs` (number of links to other articles published by Mashable) is associated with less shares.
+
+
+This suggests the topic is more important than the style, except that Mashable audiences.
+
+--
+
+The flat prior also does worse than random guessing in an out-of-sample test, while the Bayesian LASSO and ridge models do marginally better. 
+
+
+
+&lt;table class="table" style="font-size: 18px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Prior &lt;/th&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Accuracy &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #f8f0e8 !important;"&gt; Flat Prior &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #f8f0e8 !important;"&gt; 0.180 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #e9dfd1 !important;"&gt; Laplacian Prior &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #e9dfd1 !important;"&gt; 0.224 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #f8f0e8 !important;"&gt; Normal Prior &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; font-weight: bold;background-color: #f8f0e8 !important;"&gt; 0.222 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+--
+
+In all three models, the predictions are mostly 5's, showing that our models tend to over-predict sharability.
+
+---
+# Results
+.center[Confusion Matrix for Flat Prior]
+&lt;table class="table" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Truth &lt;/th&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Estimated 2 &lt;/th&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Estimated 3 &lt;/th&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Estimated 4 &lt;/th&gt;
+   &lt;th style="text-align:center;background-color: #c2a25a !important;"&gt; Estimated 5 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 10 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 14 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 23 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1893 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 11 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 17 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 22 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 2144 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 15 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 11 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 17 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1836 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 29 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 1835 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 16 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 42 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1685 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+.center[Confusion Matrix for L1 Prior]
+&lt;table class="table" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 116 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 931 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 288 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 605 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 94 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 839 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 376 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 885 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 51 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 504 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 395 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 929 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 32 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 379 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 406 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 1067 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 29 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 263 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 297 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1158 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+.center[Confusion Matrix for L2 Prior]
+&lt;table class="table" style="font-size: 14px; width: auto !important; margin-left: auto; margin-right: auto;"&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 31 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 928 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 806 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 175 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 18 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 822 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 1024 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 330 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 22 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 475 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 969 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 413 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 7 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 364 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 992 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #e9dfd1 !important;"&gt; 521 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 8 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 271 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 811 &lt;/td&gt;
+   &lt;td style="text-align:center;width: 10em; background-color: #f8f0e8 !important;"&gt; 657 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

@@ -80,7 +80,7 @@ print(onp[ ,c(3,12,13,29, 40 , 47 , 45)], row.names = F)
 
 --
 
- + We will out-of-sample testing to check our results.
+ + We will use out-of-sample testing to check our results.
 
 
 ---
@@ -98,7 +98,7 @@ print(onp[ ,c(3,12,13,29, 40 , 47 , 45)], row.names = F)
 
  + For this formulation, the latent variable $z_i$ of article $i$, $z \overset{iid}{\sim} N( x'_i \beta ,1)$
 
- + Where $x_i$ is the vector of predictive variables and $\beta$ is the vector of coeffcients we are ultimately interested in.
+  + Where $x_i$ is the vector of predictive variables and $\beta$ is the vector of coeffcients we are ultimately interested in.
  
 --
 
@@ -181,6 +181,26 @@ $$\begin{align*} p( z |\gamma,\beta,X,y) & \propto  \exp\left[-\cfrac{1}{2}\left
 Which is a truncated normal with mean $x'_i\beta$, variance 1, and truncated to be between $\gamma_{j-1}$ and $\gamma_j$.
 
 
+---
+
+#Flat Prior
+
+We specifiy a Gibbs sampling scheme:
+
+
+--
+
+ 1. For each $j = 2,...,J$ draw $\small\gamma_j^{(b)}$ from $$\scriptsize U\Big(\max\left\{\max\left\{z_i^{(b-1)}: y_i = j\right\}, \gamma_{j-1}^{(b-1)} \right\}, \min\left\{\min\left\{ z_i^{(b-1)}:y_i = j+1 \right\}, \gamma_{j+1}^{(b-1)} \right\} \Big)$$
+
+--
+
+ 2. For each $j = 1,...,J$ draw $z_i^{(b)} | y_i = j$ from $$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$
+
+--
+
+ 3. Draw $\beta^{(b)}$ from 
+
+$$\small N\left(  \left( X'X \right)^{-1} X'z^{(b)}  , \left( X'X  \right)^{-1} \right)$$
 
 
 ---
@@ -308,6 +328,7 @@ $$\small  \beta|\text{rest} \sim N\left( \left( X'X + \frac{\lambda^2}{4}\bf{D}_
 The conditional on $\lambda$ is:
 
 $$P(\lambda|z, \gamma,\beta,\alpha,X,y) \propto \left(\lambda^2\right)^{\frac{K}{2}+a+1} \exp\left[-\lambda^2 \left(b+ \frac{1}{8} \sum_{k=1}^K \alpha_k\beta_k^2 \right)\right] $$
+--
 
 Which is identifiable as the kernel of the a Gamma.
 
@@ -342,27 +363,27 @@ After deriving the conditionals we can set up a Gibbs sampler without a M-H step
 
 --
 
-1. For each $j = 1,...,J$ draw $z_i^{(b)} | y_i = j$ from
-
-
-$$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$
---
-
-3. Draw $\lambda^{2^{(b)}}$ from $Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k^{(b-1)} \beta_k^{2^{(b-1)}} \right)$
+1. For each $j = 1,...,J$ draw $z_i^{(b)} | y_i = j$ from $$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$
 
 --
 
-4. For each $k = 1,...,K$ draw $\alpha_k^{(b)}$ from $N^{-1}\left( \frac{ 2  \lambda^{-1^{(b)}}  }{|\beta_k^{(b-1)}|} , 1\right)$
+1. Draw $\lambda^{2^{(b)}}$ from $Gamma\left( \frac{K}{2} + a + 2, b+ \frac{1}{8} \sum_{k=1}^K \alpha_k^{(b-1)} \beta_k^{2^{(b-1)}} \right)$
 
 --
 
-5. Draw $\beta^{(b)}$ from 
+1. For each $k = 1,...,K$ draw $\alpha_k^{(b)}$ from $N^{-1}\left( \frac{ 2  \lambda^{-1^{(b)}}  }{|\beta_k^{(b-1)}|} , 1\right)$
 
-$$\small N\left( \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right) X'Z^{(b)}  , \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} \right)$$
+--
+
+1. Draw $\beta^{(b)}$ from 
+
+$$\small N\left( \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} X'z^{(b)}  , \left( X'X + \frac{\lambda^{2^{(b)}}}{4}\bf{D}^{(b)}_\alpha \right)^{-1} \right)$$
 ---
 
 
 # L2 Ridge regression
+
+<br>
 
 <br>
 
@@ -377,22 +398,25 @@ With Jeffrey's prior as the hyper-prior:
 $$\pi(\lambda) \propto \lambda^{-1}$$
 ---
 
+<br>
+
 This leads to the posterior:
 
 <br>
 
-$$\small \begin{align*}P(\beta,\lambda,z|y) & \propto \mathcal{L}(y|\beta,\lambda,z)\pi(\beta|\lambda)\pi(\lambda)\\[.5em] & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right]  \cdot  \\[.5em] & \hspace{10mm} \exp\left[-\cfrac{1}{2} (z-X\beta)'(z-X\beta) \right]  \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right]\lambda^{-1}\\[.5em] & \propto \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \Big( (z-X\beta)'(z-X\beta) - \lambda B'B \Big)\right]\end{align*}$$
+$$\small \begin{align*}P(\beta,\lambda,z|y) & \propto \mathcal{L}(y|\beta,\lambda,z)\pi(\beta|\lambda)\pi(\lambda)\\[.5em] & \propto  \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \exp\left[ -\cfrac{1}{2} \left(z-X\beta\right)'\left(z-X\beta\right) \right]  \cdot  \\[.5em] & \hspace{10mm} \exp\left[-\cfrac{1}{2} (z-X\beta)'(z-X\beta) \right]  \lambda^\frac{K}{2} \exp\left[-\cfrac{\lambda}{2} \sum_{k=1}^K \beta_k^2 \right]\lambda^{-1}\\[.5em] & \propto \left[ \ \prod_{i=1}^{n} \sum_{j=1}^5 I_{ \{ \gamma_{j-1} < z_i \leq \gamma_j \} }  \ I_{\{y_i = j\}}\right] \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \Big( (z-X\beta)'(z-X\beta) - \lambda \beta'\beta \Big)\right]\end{align*}$$
 
 ---
+# L2 Ridge regression
 
 
 Thus the full conditional on $\lambda$ is:
 
-$$\small P(\lambda|\text{rest}) \propto \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{1}{2} \  B'B\right]$$
+$$\small P(\lambda|\text{rest}) \propto \lambda^{\frac{K}{2}-1} \exp\left[-\cfrac{\lambda}{2} \  \beta'\beta\right]$$
 
 --
 
-Which is recognizable as a $\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} B'B \right)$
+Which is recognizable as a $\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} \beta'\beta \right)$
 
 --
 
@@ -400,7 +424,7 @@ Which is recognizable as a $\small Gamma\left(\cfrac{K}{2}, \cfrac{1}{2} B'B \ri
 
 The conditional of $\beta$ is:
 
-$$\small P(\beta|\text{rest}) \propto \exp\left[-\cfrac{1}{2}\left( B'(X'X+\lambda I_K)\beta - 2\beta(X'X+\lambda I_K)(X'X+\lambda I_K)^{-1}X'z\right) \right]$$
+$$\small P(\beta|\text{rest}) \propto \exp\left[-\cfrac{1}{2}\left( \beta'(X'X+\lambda I_K)\beta - 2\beta(X'X+\lambda I_K)(X'X+\lambda I_K)^{-1}X'z\right) \right]$$
 --
 
 Which is the kernel of a multivariate normal random variable with distribution $$\beta|\text{rest} \sim N\left((X'X+\lambda I_K)^{-1}X'z, (X'X+\lambda I_K)^{-1} \right)$$
@@ -431,5 +455,183 @@ The conditional for $\gamma_j$ is:
 
 $$\gamma_j|\text{rest} \sim U\Big(\max\{\max\{z_i: y_i = j\}, \gamma_{j-1} \}, \min\{\min\{ z_i:y_i = j+1, \gamma_{j+1}\}\}\Big)$$
 ---
+# L2 Ridge regression
 
 We finally specifiy a Gibbs sampling scheme
+
+
+--
+
+1. For each $j = 2,...,J$ draw $\small\gamma_j^{(b)}$ from $$\scriptsize U\Big(\max\left\{\max\left\{z_i^{(b-1)}: y_i = j\right\}, \gamma_{j-1}^{(b-1)} \right\}, \min\left\{\min\left\{ z_i^{(b-1)}:y_i = j+1 \right\}, \gamma_{j+1}^{(b-1)} \right\} \Big)$$
+
+--
+
+1. For each $j = 1,...,J$ draw $z_i^{(b)} | y_i = j$ from $$\small N\left( x'_i \beta^{(b-1)} , 1 \right) \text{, truncated at the left (right) by } \gamma_{j-1}^{(b-1)} \left( \gamma_{j}^{(b-1)}\right)$$
+
+--
+
+1. Draw $\lambda^{(b)}$ from $Gamma\left( \frac{K}{2} , \frac{1}{2}   \beta'^{(b-1)}   \beta^{(b-1)} \right)$
+
+--
+
+1. Draw $\beta^{(b)}$ from 
+
+$$\small N\left( \left( X'X + \lambda^{(b)} I_k \right)^{-1} X'z^{(b)}  , \left( X'X + \lambda^{(b)} I_k \right)^{-1} \right)$$
+
+
+---
+
+# Results
+
++ We sample using the data in a training set consisting of 30,000 datapoints.
+
+--
+
++ The parameters of interest are the coeffcients of the regression, $\beta$, and the thresholds for the categories, $\gamma$.
+
+--
+
++ Our estimates of some of the parameters $\beta$ clearly are affected by the prior:
+
+.center[![:scaleimgpct 60%](./images/1.bmp)]
+
+
+---
+
+# Results
+
+The variables that are associated with increased sharability are `kw_avg_avg` (average shares of the average keyword),
+`num_hrefs` (number of links), `self_reference_avg_sharess` (average shares of referenced articles in Mashable),
+while `global_rate_negative_words` and `num_self_hrefs` (number of links to other articles published by Mashable) is associated with less shares.
+
+
+This suggests the topic is more important than the style, except that Mashable audiences.
+
+--
+
+The flat prior also does worse than random guessing in an out-of-sample test, while the Bayesian LASSO and ridge models do marginally better. 
+
+
+
+```{r, echo = F}
+suppressWarnings(require(knitr,quietly = TRUE))
+suppressWarnings(require(kableExtra,quietly = TRUE))
+
+text_tbl <- data.frame( c("Flat Prior", "Laplacian Prior","Normal Prior" ) ,c(0.180,0.224,0.222 ))	
+colnames(text_tbl) <- c("Prior","Accuracy")
+
+kable(text_tbl,align=c( rep('c',times=2) ) ,
+     escape = FALSE,
+     col.names = c("Prior","Accuracy") )    %>%
+ kable_styling(full_width = F, font_size = 18) %>%
+ column_spec(1,width = "10em", bold = T ) %>%
+ column_spec(2, width = "10em", bold = T   )  %>%
+ row_spec(1,  background =  "#f8f0e8")%>%
+ row_spec(2,  background = "#e9dfd1") %>%
+ row_spec(0,  background = "#c2a25a")%>%
+ row_spec(3,  background =  "#f8f0e8")
+
+```
+
+--
+
+In all three models, the predictions are mostly 5's, showing that our models tend to over-predict sharability.
+
+---
+# Results
+.center[Confusion Matrix for Flat Prior]
+```{r, echo = F}
+suppressWarnings(require(knitr,quietly = TRUE))
+suppressWarnings(require(kableExtra,quietly = TRUE))
+fp <- as.data.frame( matrix( NA, 5 ,5  ) )
+
+fp[1,] <- c(1 , 10 , 14 , 23 , 1893)
+	fp[2,] <-	c(2 , 11 , 17 , 22 , 2144)
+fp[3,] <-		c(3 , 15 , 11 , 17 , 1836)
+	fp[4,] <-	c(4 ,  4 , 16 , 29 , 1835)
+	fp[5,] <-	c(5 ,  4 , 16 , 42 , 1685)
+
+colnames(fp) <- c("Truth", "Estimated 2", "Estimated 3", 
+	"Estimated 4" , "Estimated 5")
+
+text_tbl <- fp
+colnames(text_tbl) <- c("Truth", "Estimated 2", "Estimated 3", 
+	"Estimated 4" , "Estimated 5")
+
+kable(text_tbl,align=c( rep('c',times=5) ) ,
+     escape = FALSE,
+     col.names = c("Truth", "Estimated 2", "Estimated 3", "Estimated 4" , "Estimated 5") )    %>%
+ kable_styling(full_width = F, font_size = 14) %>%
+ column_spec(1,width = "10em", bold = F ) %>%
+ column_spec(2, width = "10em", bold = F   )  %>%
+   column_spec(3, width = "10em", bold = F   )  %>%
+ column_spec(4, width = "10em", bold = F   )  %>%
+ column_spec(5, width = "10em", bold = F   )  %>%
+ row_spec(0,  background = "#c2a25a")%>%
+ row_spec(1,  background =  "#f8f0e8")%>%
+ row_spec(2,  background = "#e9dfd1") %>%
+ row_spec(3,  background =  "#f8f0e8") %>%
+ row_spec(4,  background = "#e9dfd1") %>%
+ row_spec(5,  background =  "#f8f0e8")
+
+```
+.center[Confusion Matrix for L1 Prior]
+```{r, echo = F}
+suppressWarnings(require(knitr,quietly = TRUE))
+suppressWarnings(require(kableExtra,quietly = TRUE))
+fp <- as.data.frame( matrix( NA, 5 ,5  ) )
+
+fp[1,] <- c(1 , 116 , 931 , 288 , 605)
+	fp[2,] <-	c(2 , 94 , 839 , 376 , 885)
+fp[3,] <-		c(3 , 51 , 504 , 395 , 929)
+	fp[4,] <-	c(4 , 32 , 379 , 406 , 1067)
+	fp[5,] <-	c(5 , 29 , 263 , 297 , 1158)
+
+text_tbl <- fp
+
+kable(text_tbl,align=c( rep('c',times=5) ) ,
+     escape = FALSE, col.names = NULL)    %>%
+ kable_styling(full_width = F, font_size = 14) %>%
+ column_spec(1,width = "10em", bold = F ) %>%
+ column_spec(2, width = "10em", bold = F   )  %>%
+   column_spec(3, width = "10em", bold = F   )  %>%
+ column_spec(4, width = "10em", bold = F   )  %>%
+ column_spec(5, width = "10em", bold = F   )  %>%
+ row_spec(1,  background =  "#f8f0e8")%>%
+ row_spec(2,  background = "#e9dfd1") %>%
+ row_spec(3,  background =  "#f8f0e8") %>%
+ row_spec(4,  background = "#e9dfd1") %>%
+ row_spec(5,  background =  "#f8f0e8")
+
+```
+.center[Confusion Matrix for L2 Prior]
+```{r, echo = F}
+suppressWarnings(require(knitr,quietly = TRUE))
+suppressWarnings(require(kableExtra,quietly = TRUE))
+fp <- as.data.frame( matrix( NA, 5 ,5  ) )
+
+
+fp[1,] <- c(1 , 31 , 928 , 806, 175)
+	fp[2,] <-	c(2 , 18 , 822 , 1024 , 330)
+fp[3,] <-		c(3 , 22 , 475 , 969 , 413)
+	fp[4,] <-	c(4 , 7 , 364 , 992 , 521)
+	fp[5,] <-	c(5 , 8 , 271, 811 , 657)
+
+text_tbl <- fp
+
+kable(text_tbl,align=c( rep('c',times=5) ) ,
+     escape = FALSE, col.names = NULL)    %>%
+ kable_styling(full_width = F, font_size = 14) %>%
+ column_spec(1,width = "10em", bold = F ) %>%
+ column_spec(2, width = "10em", bold = F   )  %>%
+   column_spec(3, width = "10em", bold = F   )  %>%
+ column_spec(4, width = "10em", bold = F   )  %>%
+ column_spec(5, width = "10em", bold = F   )  %>%
+ row_spec(1,  background =  "#f8f0e8")%>%
+ row_spec(2,  background = "#e9dfd1") %>%
+ row_spec(3,  background =  "#f8f0e8") %>%
+ row_spec(4,  background = "#e9dfd1") %>%
+ row_spec(5,  background =  "#f8f0e8")
+
+
+```
